@@ -10,7 +10,6 @@
 #endif
 #endif
 
-#import "BFReport.h"
 #import "ButterflyHostController.h"
 #import "ButterflySDK.h"
 #import "BFBrowser.h"

@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "8452B7B50431F75BC7479AEE4F221517"
-               BuildableName = "Butterfly.bundle"
-               BlueprintName = "TheButterflySDK-Butterfly"
+               BlueprintIdentifier = "18410E77FF9783838F8C4432F09C6220"
+               BuildableName = "TheButterflySDK.bundle"
+               BlueprintName = "TheButterflySDK-TheButterflySDK"
                ReferencedContainer = "container:Pods.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
