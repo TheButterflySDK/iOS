@@ -8,6 +8,6 @@ typedef void (^BFBrowserResult)(id _Nullable result);
 
 @interface BFBrowser: NSObject
 
-+(void)launchURLInViewController:(NSString *) url result:(BFBrowserResult _Nullable ) result;
++(void)launchURLInViewController:(NSString *_Nullable_Nullable) url result:(BFBrowserResult _Nullable ) result;
 
 @end
