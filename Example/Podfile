@@ -1,0 +1,13 @@
+use_frameworks!
+
+platform :ios, '9.0'
+
+target 'TheButterflySDK_Example' do
+  pod 'TheButterflySDK', :path => '../'
+
+  target 'TheButterflySDK_Tests' do
+    inherit! :search_paths
+
+    
+  end
+end
