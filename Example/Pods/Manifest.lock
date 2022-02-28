@@ -1,0 +1,16 @@
+PODS:
+  - TheButterflySDK (0.9.1)
+
+DEPENDENCIES:
+  - TheButterflySDK (from `../`)
+
+EXTERNAL SOURCES:
+  TheButterflySDK:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  TheButterflySDK: 9dfc32442fc67fbde91976c98579b3dfdafbed06
+
+PODFILE CHECKSUM: 73df4a4f17074390fe58232fadcd84b58916abb1
+
+COCOAPODS: 1.11.2
