@@ -31,10 +31,10 @@ Pod::Spec.new do |s|
 
   s.ios.deployment_target = '9.0'
 
-  s.source_files = 'TheButterflySDK/TheButterflySDK/Classes/**/*'
+  s.source_files = 'TheButterflySDK/Classes/**/*'
   
   s.resource_bundles = {
-     'ButterflySDK' => ['TheButterflySDK/TheButterflySDK/Assets/resources/*.lproj/*.strings']
+     'TheButterflySDK' => ['TheButterflySDK/Assets/resources/*.lproj/*.strings']
    }
    
 
