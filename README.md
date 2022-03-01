@@ -29,15 +29,17 @@ Then run a pod install in your terminal, or from CocoaPods app.
 
 To recognize your app in TheButterflySDK servers you'll need an application key. You can set it via code, as demonstrated here.
 
-#### Example
+## Example
 
-```Objective - c
+### Objective-C
+```objective-c
 // import the pod
 #import "ButterflySDK.h"
     // Whenever you wish to open our screen, simply call:
     [ButterflySDK openReporterWithKey:@"YOUR_API_KEY"];
 ```
 
+### Swift
 ```Swift
 // import the pod
 import ButterflySDK
