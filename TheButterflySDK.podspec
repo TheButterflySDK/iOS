@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'TheButterflySDK'
-  s.version          = '0.9.1'
+  s.version          = '0.9.2'
   s.summary          = 'The Butterfly Host SDK will allow your app to host our butterfly report button.'
 
 # This description is used to generate tags and improve search results.
@@ -24,7 +24,7 @@ Pod::Spec.new do |s|
 
   s.homepage         = 'https://github.com/TheButterflySDK/iOS'
   # s.screenshots     = 'www.example.com/screenshots_1', 'www.example.com/screenshots_2'
-  s.license          = { :type => 'Apache', :file => 'LICENSE' }
+  s.license          = { :type => 'Apache License, Version 2.0', :file => 'LICENSE' }
   s.author           = { 'perrchick' => 'perrchick@gmail.com' }
   s.source           = { :git => 'https://github.com/TheButterflySDK/iOS.git', :tag => "#{s.version}"}
   # s.social_media_url = 'https://twitter.com/<TWITTER_USERNAME>'
