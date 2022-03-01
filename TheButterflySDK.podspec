@@ -26,7 +26,7 @@ Pod::Spec.new do |s|
   # s.screenshots     = 'www.example.com/screenshots_1', 'www.example.com/screenshots_2'
   s.license          = { :type => 'Apache', :file => 'LICENSE' }
   s.author           = { 'perrchick' => 'perrchick@gmail.com' }
-  s.source           = { :git => 'https://github.com/TheButterflySDK/iOS.git', :tag => s.version.to_s }
+  s.source           = { :git => 'https://github.com/TheButterflySDK/iOS.git', :tag => "#{s.version}"}
   # s.social_media_url = 'https://twitter.com/<TWITTER_USERNAME>'
 
   s.ios.deployment_target = '9.0'
