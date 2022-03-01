@@ -15,7 +15,7 @@
 #import "BFBrowser.h"
 #import "BFToastMessage.h"
 #import "BFUserInputHelper.h"
-#import "ButterflyHost-Bridging-Header.h"
+#import "TheButterflySDK-Bridging-Header.h"
 
 FOUNDATION_EXPORT double TheButterflySDKVersionNumber;
 FOUNDATION_EXPORT const unsigned char TheButterflySDKVersionString[];
