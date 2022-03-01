@@ -42,9 +42,9 @@ To recognize your app in TheButterflySDK servers you'll need an application key.
 ### Swift
 ```Swift
 // import the pod
-import ButterflySDK
+import TheButterflySDK
     // Whenever you wish to open our screen, simply call:
-    ButterflySDK.openReporterWithKey(withKey:"YOUR_API_KEY")
+    ButterflySDK.openReporter(withKey: "YOUR_API_KEY")
 ```
 
 ## Comments
