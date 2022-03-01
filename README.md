@@ -41,7 +41,7 @@ In order to present the view, ButterflyHostSDK require an the current UIViewCont
 
 ```Swift
 // import the pod
-import ButterflyHost
+import ButterflySDK
     // Whenever you wish to open our screen, simply call:
     ButterflySDK.openReporterWithKey(withKey:"YOUR_API_KEY")
 ```
