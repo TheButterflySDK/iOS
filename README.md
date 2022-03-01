@@ -1,10 +1,10 @@
-# TheButterflyHost iOS SDK
+# The Butterfly SDK for iOS
 [![Version](https://img.shields.io/cocoapods/v/TheButterflySDK.svg?style=flat)](https://cocoapods.org/pods/TheButterflySDK)
 [![License](https://img.shields.io/cocoapods/l/TheButterflySDK.svg?style=flat)](https://cocoapods.org/pods/TheButterflySDK)
 [![Platform](https://img.shields.io/cocoapods/p/TheButterflySDK.svg?style=flat)](https://cocoapods.org/pods/TheButterflySDK)
 
 
-TheButterflyHost help you app to take part in the fight against domestic violent.
+The Butterfly SDK help your app to take an active part in the fight against domestic violent.
 
 
 ## Installation
@@ -27,8 +27,7 @@ Then run a pod install in your terminal, or from CocoaPods app.
 
 ## Usage
 
-To recognize your app in ButterflyHostSDK servers you need an application key, you can set it via code.
-In order to present the view, ButterflyHostSDK require an the current UIViewController.
+To recognize your app in TheButterflySDK servers you'll need an application key. You can set it via code, as demonstrated here.
 
 #### Example
 
@@ -49,4 +48,3 @@ import ButterflySDK
 ## Comments
 
 * If you don't have CocoaPods In your project, visit here : https://cocoapods.org/
-* check out Localization suuport and add it to your project !
