@@ -1,4 +1,4 @@
-# TheButterflyHost iOS SDK
+# The Butterfly SDK for iOS
 [![Version](https://img.shields.io/cocoapods/v/TheButterflySDK.svg?style=flat)](https://cocoapods.org/pods/TheButterflySDK)
 [![License](https://img.shields.io/cocoapods/l/TheButterflySDK.svg?style=flat)](https://cocoapods.org/pods/TheButterflySDK)
 [![Platform](https://img.shields.io/cocoapods/p/TheButterflySDK.svg?style=flat)](https://cocoapods.org/pods/TheButterflySDK)
