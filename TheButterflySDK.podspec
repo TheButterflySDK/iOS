@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'TheButterflySDK'
-  s.version          = '0.9.2'
+  s.version          = '0.9.3'
   s.summary          = 'The Butterfly Host SDK will allow your app to host our butterfly report button.'
 
 # This description is used to generate tags and improve search results.
@@ -37,7 +37,6 @@ Pod::Spec.new do |s|
      'TheButterflySDK' => ['TheButterflySDK/Assets/resources/*.lproj/*.strings']
    }
    
-
   # s.public_header_files = 'Pod/Classes/**/*.h'
   # s.frameworks = 'UIKit', 'MapKit'
   # s.dependency 'Reachability', '~> 2.3'
