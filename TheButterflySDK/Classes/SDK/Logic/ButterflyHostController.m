@@ -44,7 +44,7 @@ __strong static ButterflyHostController* _shared;
     NSString* bundlePath = [[NSBundle bundleForClass:[BFUserInputHelper class]]
                       pathForResource:@"Butterfly" ofType:@"bundle"];
     NSBundle* bundle = [NSBundle bundleWithPath: bundlePath];
-    NSString* languageCode = [[bundle localizedStringForKey:@"language_code" value:@"EN" table:nil] lowercaseString];
+    NSString* languageCode = [[bundle localizedStringForKey:@"language_code" value:@"EN" table:nil] lowercaseString] ?: @"EN";
     NSString* reporterUrl = [NSString stringWithFormat:@"https://butterfly-host.web.app/reporter/?language=%@&api_key=%@&is-embedded-via-mobile-sdk=1", languageCode, key];
 
     [BFBrowser launchURLInViewController: reporterUrl result:^(id  _Nullable result) {
