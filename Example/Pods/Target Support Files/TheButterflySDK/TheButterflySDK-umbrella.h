@@ -12,9 +12,11 @@
 
 #import "ButterflyHostController.h"
 #import "ButterflySDK.h"
+#import "TheButterflySDK.h"
 #import "BFBrowser.h"
 #import "BFToastMessage.h"
 #import "BFUserInputHelper.h"
+#import "ButterflyUtils.h"
 #import "TheButterflySDK-Bridging-Header.h"
 
 FOUNDATION_EXPORT double TheButterflySDKVersionNumber;
