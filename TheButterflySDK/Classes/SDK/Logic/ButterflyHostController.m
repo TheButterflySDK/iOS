@@ -57,7 +57,7 @@ __strong static ButterflyHostController* _shared;
      [ButterflyHostController topViewController] usingKey:key];
 }
 
-+ (UIViewController *)topViewController {
++ (UIViewController *) topViewController {
     return [self topViewControllerFromViewController:
             [UIApplication sharedApplication].keyWindow.rootViewController];
 }

@@ -6,6 +6,7 @@
 #import <WebKit/WebKit.h>
 #import "BFBrowser.h"
 #import "ButterflyHostController.h"
+#import "ButterflyUtils.h"
 
 @interface BFBrowserNavigationController: UINavigationController<UIAdaptivePresentationControllerDelegate>
 
@@ -28,7 +29,7 @@
 
 @end
 
-@interface BFBrowserViewController: UIViewController <WKNavigationDelegate>
+@interface BFBrowserViewController: UIViewController <WKNavigationDelegate, WKScriptMessageHandler>
 
 @property(strong, nonatomic) NSURL *url;
 @property(strong, nonatomic) WKWebView *webView;
@@ -40,7 +41,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    self.webView = [[WKWebView alloc] init];
+    self.webView = [[WKWebView alloc] initWithFrame: CGRectZero configuration:[self wkWebViewConfiguration]];
     self.webView.navigationDelegate = self;
 
     [self.view addSubview: self.webView];
@@ -51,7 +52,7 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     
-    self.webView.frame = self.view.frame;
+    self.webView.frame = self.view.frame; // TODO: Use autolayout programmatically
 }
 
 - (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler {
@@ -70,10 +71,68 @@
     }
 }
 
+-(WKWebViewConfiguration *) wkWebViewConfiguration {
+    WKUserContentController *userController = [WKUserContentController new];
+    [userController addScriptMessageHandler: self name:@"iosJavascriptInterface"];
+            
+    WKWebViewConfiguration *configuration = [WKWebViewConfiguration new];
+    configuration.userContentController = userController;
+    return configuration;
+}
+
 - (void)onMessageFromWebPage:(NSString *)message {
     if ([message isEqualToString:@"cancel"]) {
         [self dismissViewControllerAnimated:YES completion:nil];
     } else {
+        NSLog(@"Unhandled butterfly message: %@", message);
+    }
+}
+
+- (void)userContentController:(WKUserContentController *)userContentController didReceiveScriptMessage:(WKScriptMessage *)message {
+    BOOL didHandleMessage = NO;
+    if ([[message body] isKindOfClass: [NSDictionary class]]) {
+        NSMutableDictionary *commandFromJs = [NSMutableDictionary dictionaryWithDictionary: [message body]];
+        if ([[commandFromJs valueForKey:@"commandName"] isEqual:@"sendRequest"] && [commandFromJs valueForKey:@"urlString"]) {
+            NSString *urlString = [[commandFromJs valueForKey:@"urlString"] description];
+            NSString *apiKey = [[commandFromJs valueForKey:@"key"] description];
+            
+            NSString *commandId = [[commandFromJs valueForKey:@"commandId"] description];
+            if (!commandId) {
+                commandId = @"";
+            }
+
+            [commandFromJs removeObjectForKey:@"key"];
+            [commandFromJs removeObjectForKey:@"urlString"];
+            [commandFromJs removeObjectForKey:@"commandId"];
+            [commandFromJs removeObjectForKey:@"commandName"];
+
+            __weak __typeof__(self) weakSelf = self;
+
+            [ButterflyUtils sendRequest:[NSDictionary dictionaryWithDictionary: commandFromJs] toUrl:urlString withHeaders:@{@"butterfly_host_api_key": apiKey} completionCallback:^(NSString *responseString) {
+                if (![ButterflyUtils isRunningReleaseVersion]) {
+                    NSLog(@"%@", responseString);
+                }
+
+                if (![responseString isEqualToString: @"OK"]) {
+                    responseString = @"error";
+                }
+
+                NSString* jsCommand = [NSString stringWithFormat: @"bfPureJs.commandResults['%@'] = '%@';", commandId, responseString];
+                [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                    __strong __typeof__(self) strongSelf = weakSelf;
+                    [[strongSelf webView] evaluateJavaScript: jsCommand completionHandler:^(id _Nullable jsResult, NSError * _Nullable error) {
+                        if (error && ![ButterflyUtils isRunningReleaseVersion]) {
+                            NSLog(@"%@", error);
+                        }
+                    }];
+                }];
+            }];
+
+            didHandleMessage = YES;
+        }
+    }
+    
+    if (!didHandleMessage) {
         NSLog(@"Unhandled butterfly message: %@", message);
     }
 }
