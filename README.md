@@ -12,6 +12,7 @@
 
 ### Install via CocoaPods
 
+- If you don't have CocoaPods In your project, visit here : https://cocoapods.org/
 Just add the pod 'TheButterflySDK' similar to the following to your Podfile:
 
 ```
@@ -47,6 +48,9 @@ import TheButterflySDK
     ButterflySDK.openReporter(withKey: "YOUR_API_KEY")
 ```
 
-## Comments
+## Integration test
+#### How?
+You can verify your application key by simply running the plugin in DEBUG mode. This will skip the part where the report is being sent to real support centers, our severs will ignore it and will only verify the API key. Eventually you'll get success / failure result.
 
-- If you don't have CocoaPods In your project, visit here : https://cocoapods.org/
+
+### Enjoy and good luck ❤️
