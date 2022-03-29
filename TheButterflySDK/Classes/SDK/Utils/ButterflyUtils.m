@@ -41,17 +41,25 @@ __strong static ButterflyUtils *_shared;
     return self;
 }
 
-+ (void)sendRequest:(NSDictionary *)jsonDictionary toUrl:(NSString *)urlString withHeaders:(NSDictionary *)headers completionCallback:(void (^)(NSString * _Nullable responseString)) completionCallback {
-    NSMutableURLRequest *request = [ButterflyUtils prepareRequestWithBody:jsonDictionary forEndpoint: urlString];
++ (void)sendRequest:(NSDictionary *)jsonDictionary toUrl:(NSString *) urlString withHeaders:(NSDictionary *) headers completionCallback:(void (^)(NSString * _Nullable responseString)) completionCallback {
+    NSMutableURLRequest *request = [ButterflyUtils prepareRequestWithBody: jsonDictionary forEndpoint: urlString];
+    if (!completionCallback) {
+        return;
+    }
+
+    if (!request) {
+        completionCallback(@"");
+        return;
+    }
+
     for (NSObject *key in headers) {
         [request setValue: headers[key] forHTTPHeaderField: [key description]];
     }
 
     NSURLSessionDataTask *task = [[NSURLSession sharedSession] dataTaskWithRequest: request completionHandler:^(NSData * _Nullable returnedData, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         NSString *returnString = [[NSString alloc] initWithData: returnedData encoding: NSUTF8StringEncoding];
-        if (completionCallback) {
-            completionCallback(returnString);
-        }
+
+        completionCallback(returnString);
     }];
 
     [task resume];
@@ -157,6 +165,8 @@ __strong static ButterflyUtils *_shared;
 }
 
 + (NSMutableURLRequest *) prepareRequestWithEndpoint:(NSString *) serverUrlString contentType:(NSString *) contentType {
+    if ([(serverUrlString ?: @"") length] == 0) return  nil;
+
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL: [NSURL URLWithString: serverUrlString]];
     
     [request setCachePolicy: NSURLRequestReloadIgnoringLocalCacheData];
