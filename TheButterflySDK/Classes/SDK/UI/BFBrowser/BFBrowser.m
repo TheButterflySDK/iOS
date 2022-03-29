@@ -93,10 +93,13 @@
     if ([[message body] isKindOfClass: [NSDictionary class]]) {
         NSMutableDictionary *commandFromJs = [NSMutableDictionary dictionaryWithDictionary: [message body]];
         if ([[commandFromJs valueForKey:@"commandName"] isEqual:@"sendRequest"] && [commandFromJs valueForKey:@"urlString"]) {
-            NSString *urlString = [[commandFromJs valueForKey:@"urlString"] description];
-            NSString *apiKey = [[commandFromJs valueForKey:@"key"] description];
+            NSString *urlString = [([commandFromJs valueForKey:@"urlString"] ?: @"") description];
+            NSString *apiKey = [([commandFromJs valueForKey:@"key"] ?: @"") description];
+            if (![ButterflyUtils isRunningReleaseVersion] && ![apiKey hasPrefix:@"debug-"]) {
+                apiKey = [NSString stringWithFormat: @"debug-%@", apiKey];
+            }
             
-            NSString *commandId = [[commandFromJs valueForKey:@"commandId"] description];
+            NSString *commandId = [([commandFromJs valueForKey:@"commandId"] ?: @"") description];
             if (!commandId) {
                 commandId = @"";
             }
@@ -108,7 +111,7 @@
 
             __weak __typeof__(self) weakSelf = self;
 
-            [ButterflyUtils sendRequest:[NSDictionary dictionaryWithDictionary: commandFromJs] toUrl:urlString withHeaders:@{@"butterfly_host_api_key": apiKey} completionCallback:^(NSString *responseString) {
+            [ButterflyUtils sendRequest: [NSDictionary dictionaryWithDictionary: commandFromJs] toUrl:urlString withHeaders:@{@"butterfly_host_api_key": apiKey} completionCallback:^(NSString *responseString) {
                 if (![ButterflyUtils isRunningReleaseVersion]) {
                     NSLog(@"%@", responseString);
                 }
