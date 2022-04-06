@@ -17,7 +17,7 @@ Just add the pod 'TheButterflySDK' similar to the following to your Podfile:
 
 ```
 target 'MyApp' do
-  pod 'TheButterflySDK', '1.0.1'
+  pod 'TheButterflySDK', '1.0.2'
 end
 
 ```
@@ -35,8 +35,11 @@ To recognize your app in TheButterflySDK servers you'll need an application key.
 ```objective-c
 // import the pod
 #import "ButterflySDK.h"
-    // Whenever you wish to open our screen, simply call:
-    [ButterflySDK openReporterWithKey:@"YOUR_API_KEY"];
+
+/* ... */
+
+// Whenever you wish to open our screen, simply call:
+[ButterflySDK openReporterWithKey:@"YOUR_API_KEY"];
 ```
 
 ### Swift
@@ -44,8 +47,11 @@ To recognize your app in TheButterflySDK servers you'll need an application key.
 ```Swift
 // import the pod
 import TheButterflySDK
-    // Whenever you wish to open our screen, simply call:
-    ButterflySDK.openReporter(withKey: "YOUR_API_KEY")
+
+/* ... */
+
+// Whenever you wish to open our screen, simply call:
+ButterflySDK.openReporter(withKey: "YOUR_API_KEY")
 ```
 
 ## Integration tests

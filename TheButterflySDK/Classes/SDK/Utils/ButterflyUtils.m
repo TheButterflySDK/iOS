@@ -179,4 +179,102 @@ __strong static ButterflyUtils *_shared;
     return request;
 }
 
++(void) pinToSuperView: (UIView *) subview attribute1:(NSLayoutAttribute) attribute1 attribute2:(NSLayoutAttribute) attribute2 {
+    [ButterflyUtils pinToSuperView:subview attribute1:attribute1 constant1: 0.f attribute2:attribute2 constant2: 0.f];
+}
+
++(void) pinToSuperView: (UIView *) subview attribute1:(NSLayoutAttribute) attribute1 constant1:(CGFloat)constant1 attribute2:(NSLayoutAttribute) attribute2 constant2:(CGFloat) constant2 {
+    UIView *superview = [subview superview];
+    if (superview == nil) return;
+
+    subview.translatesAutoresizingMaskIntoConstraints = NO;
+
+    [superview addConstraints:({
+        @[ [NSLayoutConstraint
+           constraintWithItem: subview
+           attribute: attribute1
+           relatedBy: NSLayoutRelationEqual
+           toItem: superview
+           attribute: attribute1
+           multiplier:1.f constant: constant1],
+
+           [NSLayoutConstraint
+            constraintWithItem: subview
+            attribute: attribute2
+            relatedBy: NSLayoutRelationEqual
+            toItem: superview
+            attribute: attribute2
+            multiplier:1.f constant: constant2] ];
+    })];
+}
+
++(void) pinToSuperViewCenter: (UIView *) subview {
+    UIView *superview = [subview superview];
+    if (superview == nil) return;
+
+    subview.translatesAutoresizingMaskIntoConstraints = NO;
+
+    [superview addConstraints:({
+        @[ [NSLayoutConstraint
+           constraintWithItem: subview
+           attribute:NSLayoutAttributeCenterX
+           relatedBy:NSLayoutRelationEqual
+           toItem: superview
+           attribute:NSLayoutAttributeCenterX
+           multiplier:1.f constant:0.f],
+
+           [NSLayoutConstraint
+            constraintWithItem: subview
+            attribute:NSLayoutAttributeCenterY
+            relatedBy:NSLayoutRelationEqual
+            toItem: superview
+            attribute:NSLayoutAttributeCenterY
+            multiplier:1.f constant:0.f] ];
+    })];
+}
+
++(void) stretchToSuperView: (UIView *) subview {
+    UIView *superview = [subview superview];
+    if (superview == nil) return;
+
+    subview.translatesAutoresizingMaskIntoConstraints = NO;
+
+    NSLayoutConstraint *width =[NSLayoutConstraint
+                                        constraintWithItem: subview
+                                        attribute:NSLayoutAttributeWidth
+                                        relatedBy:0
+                                        toItem: superview
+                                        attribute:NSLayoutAttributeWidth
+                                        multiplier:1.0
+                                        constant:0];
+    NSLayoutConstraint *height =[NSLayoutConstraint
+                                         constraintWithItem: subview
+                                         attribute:NSLayoutAttributeHeight
+                                         relatedBy:0
+                                         toItem: superview
+                                         attribute:NSLayoutAttributeHeight
+                                         multiplier:1.0
+                                         constant:0];
+    NSLayoutConstraint *top = [NSLayoutConstraint
+                                       constraintWithItem: subview
+                                       attribute:NSLayoutAttributeTop
+                                       relatedBy:NSLayoutRelationEqual
+                                       toItem: superview
+                                       attribute:NSLayoutAttributeTop
+                                       multiplier:1.0f
+                                       constant:0.f];
+    NSLayoutConstraint *leading = [NSLayoutConstraint
+                                           constraintWithItem: subview
+                                           attribute:NSLayoutAttributeLeading
+                                           relatedBy:NSLayoutRelationEqual
+                                           toItem: superview
+                                           attribute:NSLayoutAttributeLeading
+                                           multiplier:1.0f
+                                           constant:0.f];
+    [superview addConstraint:width];
+    [superview addConstraint:height];
+    [superview addConstraint:top];
+    [superview addConstraint:leading];
+}
+
 @end

@@ -21,4 +21,9 @@
 +(NSData *) toJsonData:(NSDictionary *) jsonDictionary;
 +(NSDictionary *) toJsonDictionary:(NSString *) jsonString;
 
++(void) pinToSuperView: (UIView *) subview attribute1:(NSLayoutAttribute) attribute1 attribute2:(NSLayoutAttribute) attribute2;
++(void) pinToSuperView: (UIView *) subview attribute1:(NSLayoutAttribute) attribute1 constant1:(CGFloat) constant1 attribute2:(NSLayoutAttribute) attribute2  constant2:(CGFloat) constant2;
++(void) pinToSuperViewCenter: (UIView *) subview;
++(void) stretchToSuperView: (UIView *) subview;
+
 @end

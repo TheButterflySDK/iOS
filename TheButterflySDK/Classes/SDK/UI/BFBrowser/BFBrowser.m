@@ -45,17 +45,30 @@
     self.webView.navigationDelegate = self;
 
     [self.view addSubview: self.webView];
+    [ButterflyUtils stretchToSuperView: self.webView];
+
+    UIButton *closeButton;
+    if (@available(iOS 13.0, *)) {
+        closeButton = [UIButton buttonWithType: UIButtonTypeClose];
+    } else {
+        closeButton = [UIButton buttonWithType: UIButtonTypeSystem];
+        [closeButton setTitle: @"❌" forState:UIControlStateNormal];
+    }
+
+    [closeButton addTarget: self action:@selector(onCloseButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
+    
+    [self.view addSubview: closeButton];
+    [ButterflyUtils pinToSuperView: closeButton attribute1: NSLayoutAttributeLeading constant1: 10 attribute2: NSLayoutAttributeTop constant2: 40];
+
     [self.webView loadRequest:[NSURLRequest requestWithURL: self.url]];
     self.webView.allowsBackForwardNavigationGestures = NO;
 }
 
-- (void)viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
-    
-    self.webView.frame = self.view.frame; // TODO: Use autolayout programmatically
+-(void) onCloseButtonPressed:(UIButton *) sender {
+    [self dismissViewControllerAnimated:YES completion:nil];
 }
 
-- (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler {
+- (void) webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler {
     
     NSString *navigationUrlString = navigationAction.request.URL.absoluteURL.absoluteString;
     NSLog(@"%@", navigationUrlString);

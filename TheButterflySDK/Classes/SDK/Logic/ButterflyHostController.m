@@ -41,8 +41,7 @@ __strong static ButterflyHostController* _shared;
 }
 
 -(void) openReporterInViewController:(UIViewController*) viewController usingKey:(NSString*) key {
-    NSString* bundlePath = [[NSBundle bundleForClass:[BFUserInputHelper class]]
-                      pathForResource:@"TheButterflySDK" ofType:@"bundle"];
+    NSString* bundlePath = [[NSBundle bundleForClass:[BFUserInputHelper class]] pathForResource:@"TheButterflySDK" ofType:@"bundle"];
     NSBundle* bundle = [NSBundle bundleWithPath: bundlePath];
     NSString* languageCode = [[bundle localizedStringForKey:@"language_code" value:@"EN" table:nil] lowercaseString] ?: @"EN";
     NSString* reporterUrl = [NSString stringWithFormat:@"https://butterfly-host.web.app/reporter/?language=%@&api_key=%@&is-embedded-via-mobile-sdk=1", languageCode, key];
