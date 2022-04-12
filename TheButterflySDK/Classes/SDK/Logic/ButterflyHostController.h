@@ -11,8 +11,11 @@
 
 @interface ButterflyHostController: NSObject
 
-+(void) openReporterWithKey:(NSString*)key;
++(void) openReporterWithKey:(NSString*) key;
++(void) overrideLanguage:(NSString *) languageCode;
++(void) overrideCountry:(NSString *) countryCode;
++(void) useCustomColor:(NSString *) colorHexa;
 
-+ (UIViewController *)topViewController;
++(UIViewController *) topViewController;
 
 @end
