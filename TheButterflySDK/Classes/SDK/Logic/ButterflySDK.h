@@ -8,7 +8,31 @@
 
 #import <UIKit/UIKit.h>
 
+typedef NS_ENUM(NSUInteger, BFInterfaceLanguage) {
+    BFInterfaceLanguage_English = 1,
+    BFInterfaceLanguage_Hebrew = 2,
+};
+
 @interface ButterflySDK: NSObject
+
+/**
+ Sets the main user interface's language, no matter what's the language of the user's device.
+
+ In general the language is detected according to the deivice settings. At this moment, the SDK recognizes only two languages (Hebrew or English).
+ In case the language is not supported - the SDK will operate in English.
+ 
+ This method will override the detected language and will operate in English or in Hebrew.
+ */
++(void) overrideLanguage:(BFInterfaceLanguage) languageToOverride;
+/**
+ Sets a two letter country code of the reporter's location, that will be used in the Butterfly servers, no matter where it was really sent from.
+ */
++(void) overrideCountry:(NSString *) countryCode;
+
+/**
+ Sets a new color theme of the Butterfly's screens. The string represents the hexadecimal value of the color. Examples of possible formats: "0xFF91BA48", "FF91BA48", "91BA48"
+ */
++(void) useCustomColor:(NSString *) colorHexa;
 
 +(void) openReporterWithKey:(NSString*) key;
 

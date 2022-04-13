@@ -12,6 +12,14 @@
 #import "BFToastMessage.h"
 #import "BFBrowser.h"
 
+@interface ButterflyHostController()
+
+@property (nonatomic, assign) NSString *languageCodeToOverride;
+@property (nonatomic, strong) NSString *countryCodeToOverride;
+@property (nonatomic, strong) NSString *customColorHexa;
+
+@end
+
 @implementation ButterflyHostController
 
 __strong static ButterflyHostController* _shared;
@@ -36,24 +44,47 @@ __strong static ButterflyHostController* _shared;
     return nil;
 }
 
++ (void)openReporterWithKey:(NSString *)key {
+    [[ButterflyHostController shared] openReporterInViewController:
+     [ButterflyHostController topViewController] usingKey:key];
+}
+
++ (void)overrideLanguage:(NSString *) languageCode {
+    [ButterflyHostController shared].languageCodeToOverride = languageCode;
+}
+
++ (void)overrideCountry:(NSString *) countryCode {
+    [ButterflyHostController shared].countryCodeToOverride = countryCode ?: @"n";
+}
+
++ (void)useCustomColor:(NSString *) colorHexa {
+    [ButterflyHostController shared].customColorHexa = colorHexa ?: @"n";
+}
+
 + (void)grabReportFromViewController:(UIViewController *)viewController usingKey:(NSString *)key {
     [[ButterflyHostController shared] openReporterInViewController: viewController usingKey: key];
 }
 
 -(void) openReporterInViewController:(UIViewController*) viewController usingKey:(NSString*) key {
-    NSString* bundlePath = [[NSBundle bundleForClass:[BFUserInputHelper class]] pathForResource:@"TheButterflySDK" ofType:@"bundle"];
-    NSBundle* bundle = [NSBundle bundleWithPath: bundlePath];
-    NSString* languageCode = [[bundle localizedStringForKey:@"language_code" value:@"EN" table:nil] lowercaseString] ?: @"EN";
-    NSString* reporterUrl = [NSString stringWithFormat:@"https://butterfly-host.web.app/reporter/?language=%@&api_key=%@&is-embedded-via-mobile-sdk=1", languageCode, key];
+    NSString* languageCode;
+    if (self.languageCodeToOverride && [self.languageCodeToOverride length] > 0) {
+        languageCode = self.languageCodeToOverride;
+    } else {
+        NSString* bundlePath = [[NSBundle bundleForClass:[BFUserInputHelper class]] pathForResource:@"TheButterflySDK" ofType:@"bundle"];
+        NSBundle* bundle = [NSBundle bundleWithPath: bundlePath];
+        languageCode = [[bundle localizedStringForKey:@"language_code" value:@"EN" table:nil] lowercaseString] ?: @"EN";
+    }
+
+    NSString* countryToOverride = self.countryCodeToOverride ?: @"n";
+
+    NSString* butterflySdkVersion = @"1.1.0";
+    NSString* customColorHexa = self.customColorHexa ?: @"n";
+
+    NSString* reporterUrl = [NSString stringWithFormat:@"https://butterfly-host.web.app/reporter/?language=%@&api_key=%@&sdk-version=%@&override_country=%@&colorize=%@&is-embedded-via-mobile-sdk=1", languageCode, key, butterflySdkVersion, countryToOverride, customColorHexa];
 
     [BFBrowser launchURLInViewController: reporterUrl result:^(id  _Nullable result) {
         NSLog(@"URL launched!");
     }];
-}
-
-+ (void)openReporterWithKey:(NSString *)key {
-    [[ButterflyHostController shared] openReporterInViewController:
-     [ButterflyHostController topViewController] usingKey:key];
 }
 
 + (UIViewController *) topViewController {

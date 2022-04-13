@@ -8,6 +8,7 @@
 
 #import "ButterflySDK.h"
 #import "ButterflyHostController.h"
+#import "ButterflyUtils.h"
 
 @implementation ButterflySDK
 
@@ -34,6 +35,31 @@ __strong static ButterflySDK* _shared;
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
         [ButterflyHostController openReporterWithKey:key];
     }];
+}
+
++ (void)overrideLanguage:(BFInterfaceLanguage)languageToOverride {
+    switch (languageToOverride) {
+        case BFInterfaceLanguage_Hebrew:
+            [ButterflyHostController overrideLanguage: @"he"];
+            break;
+        case BFInterfaceLanguage_English:
+            [ButterflyHostController overrideLanguage: @"en"];
+            break;
+        default:
+            if (![ButterflyUtils isRunningReleaseVersion]) {
+                NSLog(@"ButterflySDK: Used unsupported language");
+            }
+            break;
+    }
+    
+}
+
++ (void)overrideCountry:(NSString *)countryCode {
+    [ButterflyHostController overrideCountry: countryCode];
+}
+
++ (void)useCustomColor:(NSString *) colorHexa {
+    [ButterflyHostController useCustomColor: colorHexa];
 }
 
 @end

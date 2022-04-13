@@ -94,10 +94,21 @@
 }
 
 - (void)onMessageFromWebPage:(NSString *)message {
-    if ([message isEqualToString:@"cancel"]) {
+    NSArray *components = [message componentsSeparatedByString:@"::"];
+    NSString *command = [[components firstObject] description];
+    if ([command isEqualToString:@"cancel"]) {
         [self dismissViewControllerAnimated:YES completion:nil];
+    } else if ([command isEqualToString:@"open"]) {
+        NSString *urlString = [[components lastObject] description];
+        NSURL *url = [NSURL URLWithString: urlString];
+        BOOL isValid = [url scheme] && [url host];
+        if (isValid) {
+            [[UIApplication sharedApplication] openURL: url];
+        }
     } else {
-        NSLog(@"Unhandled butterfly message: %@", message);
+        if (![ButterflyUtils isRunningReleaseVersion]) {
+            NSLog(@"Unhandled butterfly message: %@", message);
+        }
     }
 }
 
