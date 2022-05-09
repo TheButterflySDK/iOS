@@ -33,6 +33,7 @@
 
 @property(strong, nonatomic) NSURL *url;
 @property(strong, nonatomic) WKWebView *webView;
+@property (nonatomic, strong) NSObject *appGoesBackgroundObserver;
 
 @end
 
@@ -62,6 +63,21 @@
 
     [self.webView loadRequest:[NSURLRequest requestWithURL: self.url]];
     self.webView.allowsBackForwardNavigationGestures = NO;
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear: animated];
+    
+    __weak __typeof__(self) weakSelf = self;
+    self.appGoesBackgroundObserver = [[NSNotificationCenter defaultCenter] addObserverForName: UIApplicationWillResignActiveNotification object: nil queue: nil usingBlock:^(NSNotification * _Nonnull note) {
+        [weakSelf onCloseButtonPressed: nil];
+    }];
+}
+
+- (void)viewDidDisappear:(BOOL)animated {
+    [super viewDidDisappear: animated];
+
+    [[NSNotificationCenter defaultCenter] removeObserver: [self appGoesBackgroundObserver]];
 }
 
 -(void) onCloseButtonPressed:(UIButton *) sender {
