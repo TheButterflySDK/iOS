@@ -77,7 +77,7 @@ __strong static ButterflyHostController* _shared;
 
     NSString* countryToOverride = self.countryCodeToOverride ?: @"n";
 
-    NSString* butterflySdkVersion = @"1.1.0";
+    NSString* butterflySdkVersion = @"1.1.2";
     NSString* customColorHexa = self.customColorHexa ?: @"n";
 
     NSString* reporterUrl = [NSString stringWithFormat:@"https://butterfly-host.web.app/reporter/?language=%@&api_key=%@&sdk-version=%@&override_country=%@&colorize=%@&is-embedded-via-mobile-sdk=1", languageCode, key, butterflySdkVersion, countryToOverride, customColorHexa];
