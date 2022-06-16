@@ -70,14 +70,30 @@ __strong static ButterflyHostController* _shared;
     if (self.languageCodeToOverride && [self.languageCodeToOverride length] > 0) {
         languageCode = self.languageCodeToOverride;
     } else {
-        NSString* bundlePath = [[NSBundle bundleForClass:[BFUserInputHelper class]] pathForResource:@"TheButterflySDK" ofType:@"bundle"];
-        NSBundle* bundle = [NSBundle bundleWithPath: bundlePath];
-        languageCode = [[bundle localizedStringForKey:@"language_code" value:@"EN" table:nil] lowercaseString] ?: @"EN";
+        // Device's language:  https://github.com/stefalda/ReactNativeLocalization/issues/178#issuecomment-581140974
+        languageCode = [[[[[NSLocale preferredLanguages] objectAtIndex:0] componentsSeparatedByString:@"-"] firstObject] description];
+
+        if (!languageCode) {
+//      if (!languageCode && @available(iOS 10.0, *)) { // Warning: @available does not guard availability here if (@available); use if (@available) instead
+            if (@available(iOS 10.0, *)) {
+                // App's language
+                languageCode = [[NSLocale currentLocale] languageCode];
+            } else {
+                // Fallback on earlier versions
+            }
+        }
+
+        if (!languageCode) {
+            // App's localized string
+            NSString* bundlePath = [[NSBundle bundleForClass:[BFUserInputHelper class]] pathForResource:@"TheButterflySDK" ofType:@"bundle"];
+            NSBundle* bundle = [NSBundle bundleWithPath: bundlePath];
+            languageCode = [[bundle localizedStringForKey:@"language_code" value:@"EN" table:nil] lowercaseString] ?: @"EN";
+        }
     }
 
     NSString* countryToOverride = self.countryCodeToOverride ?: @"n";
 
-    NSString* butterflySdkVersion = @"1.1.2";
+    NSString* butterflySdkVersion = @"1.2.1";
     NSString* customColorHexa = self.customColorHexa ?: @"n";
 
     NSString* reporterUrl = [NSString stringWithFormat:@"https://butterfly-host.web.app/reporter/?language=%@&api_key=%@&sdk-version=%@&override_country=%@&colorize=%@&is-embedded-via-mobile-sdk=1", languageCode, key, butterflySdkVersion, countryToOverride, customColorHexa];

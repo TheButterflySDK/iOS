@@ -121,6 +121,7 @@
         if (isValid) {
             [[UIApplication sharedApplication] openURL: url];
         }
+    } else if ([command isEqualToString:@"navigate"]) {
     } else {
         if (![ButterflyUtils isRunningReleaseVersion]) {
             NSLog(@"Unhandled butterfly message: %@", message);
