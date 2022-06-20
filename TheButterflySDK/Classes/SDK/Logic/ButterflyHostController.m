@@ -96,7 +96,7 @@ __strong static ButterflyHostController* _shared;
     NSString* butterflySdkVersion = @"1.2.1";
     NSString* customColorHexa = self.customColorHexa ?: @"n";
 
-    NSString* reporterUrl = [NSString stringWithFormat:@"https://butterfly-host.web.app/reporter/?language=%@&api_key=%@&sdk-version=%@&override_country=%@&colorize=%@&is-embedded-via-mobile-sdk=1", languageCode, key, butterflySdkVersion, countryToOverride, customColorHexa];
+    NSString* reporterUrl = [NSString stringWithFormat:@"https://butterfly-button.web.app/reporter/?language=%@&api_key=%@&sdk-version=%@&override_country=%@&colorize=%@&is-embedded-via-mobile-sdk=1", languageCode, key, butterflySdkVersion, countryToOverride, customColorHexa];
 
     [BFBrowser launchURLInViewController: reporterUrl result:^(id  _Nullable result) {
         NSLog(@"URL launched!");

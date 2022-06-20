@@ -8,6 +8,14 @@
 
 #import <Foundation/Foundation.h>
 
+@interface BFSDKLogger: NSObject
+
+//+(void) logMessage: (NSString *) message;
+//+(void) logMessage: (NSString *) NSString *format, ...;
++(void) logMessage:(NSString *)message, ...;
+
+@end
+
 /**
  A private class that is responsible on our core actions.
  */

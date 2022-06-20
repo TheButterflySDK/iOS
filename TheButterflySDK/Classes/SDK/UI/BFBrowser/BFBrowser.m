@@ -34,6 +34,7 @@
 @property(strong, nonatomic) NSURL *url;
 @property(strong, nonatomic) WKWebView *webView;
 @property (nonatomic, strong) NSObject *appGoesBackgroundObserver;
+@property (nonatomic, strong) NSMutableSet *urlWhiteList;
 
 @end
 
@@ -44,6 +45,8 @@
     
     self.webView = [[WKWebView alloc] initWithFrame: CGRectZero configuration:[self wkWebViewConfiguration]];
     self.webView.navigationDelegate = self;
+
+    self.urlWhiteList = [NSMutableSet set];
 
     [self.view addSubview: self.webView];
     [ButterflyUtils stretchToSuperView: self.webView];
@@ -59,7 +62,18 @@
     [closeButton addTarget: self action:@selector(onCloseButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
     
     [self.view addSubview: closeButton];
-    [ButterflyUtils pinToSuperView: closeButton attribute1: NSLayoutAttributeLeading constant1: 10 attribute2: NSLayoutAttributeTop constant2: 40];
+    [ButterflyUtils pinToSuperView: closeButton attribute1: NSLayoutAttributeLeading constant1: 10 attribute2: NSLayoutAttributeTop constant2: 50];
+
+    UIButton *refreshButton;
+   
+    refreshButton = [UIButton buttonWithType: UIButtonTypeSystem];
+    [refreshButton setTitle: @"🔄" forState:UIControlStateNormal];
+
+    [refreshButton addTarget: self action:@selector(onRefreshButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
+    
+    [self.view addSubview: refreshButton];
+    
+    [ButterflyUtils pinToSuperView: refreshButton attribute1: NSLayoutAttributeLeading constant1: 50 attribute2: NSLayoutAttributeTop constant2: 50];
 
     [self.webView loadRequest:[NSURLRequest requestWithURL: self.url]];
     self.webView.allowsBackForwardNavigationGestures = NO;
@@ -80,6 +94,21 @@
     [[NSNotificationCenter defaultCenter] removeObserver: [self appGoesBackgroundObserver]];
 }
 
+-(BOOL) isWhiteListed:(NSString *) urlString {
+    if ([urlString hasPrefix:@"https://butterfly-button.web.app"]) return YES;
+    if ([urlString hasPrefix:@"https://butterfly-host.web.app"]) return YES;
+
+    for (NSString *whiteListed in self.urlWhiteList) {
+        if ([urlString hasPrefix: whiteListed]) return YES;
+    }
+
+    return NO;
+}
+
+-(void) onRefreshButtonPressed:(UIButton *) sender {
+    [self.webView loadRequest:[NSURLRequest requestWithURL: self.url]];
+}
+
 -(void) onCloseButtonPressed:(UIButton *) sender {
     [self dismissViewControllerAnimated:YES completion:nil];
 }
@@ -87,20 +116,21 @@
 - (void) webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler {
     
     NSString *navigationUrlString = navigationAction.request.URL.absoluteURL.absoluteString;
-    NSLog(@"%@", navigationUrlString);
+    [BFSDKLogger logMessage: @"navigationUrlString: %@", navigationUrlString];
 
-    BOOL shouldNavigate = [navigationUrlString hasPrefix:@"https://butterfly-host.web.app"];
+    BOOL shouldNavigate = [self isWhiteListed: navigationUrlString];
     
     decisionHandler(shouldNavigate ? WKNavigationActionPolicyAllow : WKNavigationActionPolicyCancel);
     
     NSString *messageProtocolPrefix = @"https://the-butterfly.bridge/";
-    BOOL didSendMessage = [navigationUrlString hasPrefix: messageProtocolPrefix];
-    if (didSendMessage) {
+    BOOL didReceiveMessageFromWebView = [navigationUrlString hasPrefix: messageProtocolPrefix];
+    if (didReceiveMessageFromWebView) {
         [self onMessageFromWebPage: [navigationUrlString stringByReplacingOccurrencesOfString: messageProtocolPrefix withString: @""]];
     }
 }
 
 -(WKWebViewConfiguration *) wkWebViewConfiguration {
+    // from iOS 8.0+, https://developer.apple.com/documentation/webkit/wkusercontentcontroller
     WKUserContentController *userController = [WKUserContentController new];
     [userController addScriptMessageHandler: self name:@"iosJavascriptInterface"];
             
@@ -109,76 +139,108 @@
     return configuration;
 }
 
-- (void)onMessageFromWebPage:(NSString *)message {
+
+- (void)onMessageFromWebPage:(NSString *) message {
     NSArray *components = [message componentsSeparatedByString:@"::"];
     NSString *command = [[components firstObject] description];
+
+    [self onCommandFromWebPage: command withParams: [NSMutableDictionary dictionaryWithDictionary:@{@"components": components}] andCommandId: @""];
+}
+
+- (BOOL) onCommandFromWebPage:(NSString *) command
+                  withParams:(NSMutableDictionary *) params
+                andCommandId:(NSString *) commandId {
+    BOOL didHandleMessage = NO;
+
     if ([command isEqualToString:@"cancel"]) {
         [self dismissViewControllerAnimated:YES completion:nil];
+
+        didHandleMessage = YES;
     } else if ([command isEqualToString:@"open"]) {
+        NSArray *components = params[@"components"];
+
         NSString *urlString = [[components lastObject] description];
         NSURL *url = [NSURL URLWithString: urlString];
         BOOL isValid = [url scheme] && [url host];
         if (isValid) {
             [[UIApplication sharedApplication] openURL: url];
         }
-    } else if ([command isEqualToString:@"navigate"]) {
-    } else {
-        if (![ButterflyUtils isRunningReleaseVersion]) {
-            NSLog(@"Unhandled butterfly message: %@", message);
+
+        didHandleMessage = YES;
+    } else if ([command isEqualToString:@"allowNavigation"]) {
+        NSString *urlString = params[@"urlString"];
+
+        if ([urlString isKindOfClass:[NSString class]]) {
+            [self.urlWhiteList addObject: urlString];
         }
+        
+        [self markAsHandled: commandId withResult: @"OK"];
+
+        didHandleMessage = YES;
+    } else if ([command isEqualToString:@"sendRequest"] && [params valueForKey:@"urlString"]) {
+        NSString *urlString = [([params valueForKey:@"urlString"] ?: @"") description];
+        NSString *apiKey = [([params valueForKey:@"key"] ?: @"") description];
+        if (![ButterflyUtils isRunningReleaseVersion] && ![apiKey hasPrefix:@"debug-"]) {
+            apiKey = [NSString stringWithFormat: @"debug-%@", apiKey];
+        }
+
+        [params removeObjectForKey:@"key"];
+        [params removeObjectForKey:@"urlString"];
+
+        didHandleMessage = YES;
+
+        [ButterflyUtils sendRequest: [NSDictionary dictionaryWithDictionary: params] toUrl:urlString withHeaders:@{@"butterfly_host_api_key": apiKey} completionCallback:^(NSString *responseString) {
+            [BFSDKLogger logMessage:responseString];
+
+            if (![responseString isEqualToString: @"OK"]) {
+                responseString = @"error";
+            }
+            
+            [self markAsHandled: commandId withResult: responseString];
+        }];
+    } else {
+        [BFSDKLogger logMessage: @"Unhandled butterfly command: %@", command];
     }
+    
+    return didHandleMessage;
 }
 
-- (void)userContentController:(WKUserContentController *)userContentController didReceiveScriptMessage:(WKScriptMessage *)message {
+- (void)userContentController:(WKUserContentController *)userContentController didReceiveScriptMessage:(WKScriptMessage *) message {
     BOOL didHandleMessage = NO;
     if ([[message body] isKindOfClass: [NSDictionary class]]) {
         NSMutableDictionary *commandFromJs = [NSMutableDictionary dictionaryWithDictionary: [message body]];
-        if ([[commandFromJs valueForKey:@"commandName"] isEqual:@"sendRequest"] && [commandFromJs valueForKey:@"urlString"]) {
-            NSString *urlString = [([commandFromJs valueForKey:@"urlString"] ?: @"") description];
-            NSString *apiKey = [([commandFromJs valueForKey:@"key"] ?: @"") description];
-            if (![ButterflyUtils isRunningReleaseVersion] && ![apiKey hasPrefix:@"debug-"]) {
-                apiKey = [NSString stringWithFormat: @"debug-%@", apiKey];
-            }
-            
-            NSString *commandId = [([commandFromJs valueForKey:@"commandId"] ?: @"") description];
-            if (!commandId) {
-                commandId = @"";
-            }
+        NSString *commandName = [[commandFromJs valueForKey:@"commandName"] description];
+        NSString *commandId = [([commandFromJs valueForKey:@"commandId"] ?: @"") description];
 
-            [commandFromJs removeObjectForKey:@"key"];
-            [commandFromJs removeObjectForKey:@"urlString"];
-            [commandFromJs removeObjectForKey:@"commandId"];
-            [commandFromJs removeObjectForKey:@"commandName"];
-
-            __weak __typeof__(self) weakSelf = self;
-
-            [ButterflyUtils sendRequest: [NSDictionary dictionaryWithDictionary: commandFromJs] toUrl:urlString withHeaders:@{@"butterfly_host_api_key": apiKey} completionCallback:^(NSString *responseString) {
-                if (![ButterflyUtils isRunningReleaseVersion]) {
-                    NSLog(@"%@", responseString);
-                }
-
-                if (![responseString isEqualToString: @"OK"]) {
-                    responseString = @"error";
-                }
-
-                NSString* jsCommand = [NSString stringWithFormat: @"bfPureJs.commandResults['%@'] = '%@';", commandId, responseString];
-                [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-                    __strong __typeof__(self) strongSelf = weakSelf;
-                    [[strongSelf webView] evaluateJavaScript: jsCommand completionHandler:^(id _Nullable jsResult, NSError * _Nullable error) {
-                        if (error && ![ButterflyUtils isRunningReleaseVersion]) {
-                            NSLog(@"%@", error);
-                        }
-                    }];
-                }];
-            }];
-
-            didHandleMessage = YES;
+        if (!commandId) {
+            commandId = @"";
         }
+
+        [commandFromJs removeObjectForKey:@"commandName"];
+        [commandFromJs removeObjectForKey:@"commandId"];
+
+        didHandleMessage = [self onCommandFromWebPage: commandName withParams: commandFromJs andCommandId: commandId];
     }
     
     if (!didHandleMessage) {
-        NSLog(@"Unhandled butterfly message: %@", message);
+        [BFSDKLogger logMessage:@"Unhandled butterfly message: %@", message];
     }
+}
+
+-(void) markAsHandled:(NSString *) commandId withResult: (NSString *) result {
+    if (!commandId || [[commandId description] length] == 0) return;
+
+    __weak __typeof__(self) weakSelf = self;
+
+    NSString* jsCommand = [NSString stringWithFormat: @"bfPureJs.commandResults['%@'] = '%@';", commandId, result];
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        __strong __typeof__(self) strongSelf = weakSelf;
+        [[strongSelf webView] evaluateJavaScript: jsCommand completionHandler:^(id _Nullable jsResult, NSError * _Nullable error) {
+            if (error) {
+                [BFSDKLogger logMessage: [error description]];
+            }
+        }];
+    }];
 }
 
 @end

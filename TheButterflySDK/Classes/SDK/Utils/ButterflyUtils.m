@@ -8,6 +8,20 @@
 
 #import "ButterflyUtils.h"
 
+@implementation BFSDKLogger : NSObject
+
++ (void)logMessage:(NSString *)message, ... {
+    if (![ButterflyUtils isRunningReleaseVersion]) {
+        // From: https://stackoverflow.com/a/4804807/2735029
+        va_list args;
+        va_start(args, message);
+        NSLogv(message, args);
+        va_end(args);
+    }
+}
+
+@end
+
 @interface ButterflyUtils()
 
 @property (nonatomic, strong) NSString *libraryPath;
@@ -41,7 +55,7 @@ __strong static ButterflyUtils *_shared;
     return self;
 }
 
-+ (void)sendRequest:(NSDictionary *)jsonDictionary toUrl:(NSString *) urlString withHeaders:(NSDictionary *) headers completionCallback:(void (^)(NSString * _Nullable responseString)) completionCallback {
++ (void) sendRequest:(NSDictionary *)jsonDictionary toUrl:(NSString *) urlString withHeaders:(NSDictionary *) headers completionCallback:(void (^)(NSString * _Nullable responseString)) completionCallback {
     NSMutableURLRequest *request = [ButterflyUtils prepareRequestWithBody: jsonDictionary forEndpoint: urlString];
     if (!completionCallback) {
         return;
