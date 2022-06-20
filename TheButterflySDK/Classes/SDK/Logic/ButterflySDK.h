@@ -8,11 +8,6 @@
 
 #import <UIKit/UIKit.h>
 
-typedef NS_ENUM(NSUInteger, BFInterfaceLanguage) {
-    BFInterfaceLanguage_English = 1,
-    BFInterfaceLanguage_Hebrew = 2,
-};
-
 @interface ButterflySDK: NSObject
 
 /**
@@ -23,7 +18,7 @@ typedef NS_ENUM(NSUInteger, BFInterfaceLanguage) {
  
  This method will override the detected language and will operate in English or in Hebrew.
  */
-+(void) overrideLanguage:(BFInterfaceLanguage) languageToOverride;
++(void) overrideLanguage:(NSString *) languageToOverride;
 /**
  Sets a two letter country code of the reporter's location, that will be used in the Butterfly servers, no matter where it was really sent from.
  */
