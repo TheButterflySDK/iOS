@@ -37,21 +37,8 @@ __strong static ButterflySDK* _shared;
     }];
 }
 
-+ (void)overrideLanguage:(BFInterfaceLanguage)languageToOverride {
-    switch (languageToOverride) {
-        case BFInterfaceLanguage_Hebrew:
-            [ButterflyHostController overrideLanguage: @"he"];
-            break;
-        case BFInterfaceLanguage_English:
-            [ButterflyHostController overrideLanguage: @"en"];
-            break;
-        default:
-            if (![ButterflyUtils isRunningReleaseVersion]) {
-                NSLog(@"ButterflySDK: Used unsupported language");
-            }
-            break;
-    }
-    
++ (void)overrideLanguage:(NSString *) languageToOverride {
+    [ButterflyHostController overrideLanguage: languageToOverride];
 }
 
 + (void)overrideCountry:(NSString *)countryCode {
