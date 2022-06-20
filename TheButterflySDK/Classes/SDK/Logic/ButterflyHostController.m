@@ -23,6 +23,7 @@
 @implementation ButterflyHostController
 
 __strong static ButterflyHostController* _shared;
+
 +(ButterflyHostController*) shared {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken,^{
@@ -93,13 +94,13 @@ __strong static ButterflyHostController* _shared;
 
     NSString* countryToOverride = self.countryCodeToOverride ?: @"n";
 
-    NSString* butterflySdkVersion = @"1.2.1";
+    NSString* butterflySdkVersion = @"1.2.2";
     NSString* customColorHexa = self.customColorHexa ?: @"n";
 
     NSString* reporterUrl = [NSString stringWithFormat:@"https://butterfly-button.web.app/reporter/?language=%@&api_key=%@&sdk-version=%@&override_country=%@&colorize=%@&is-embedded-via-mobile-sdk=1", languageCode, key, butterflySdkVersion, countryToOverride, customColorHexa];
 
-    [BFBrowser launchURLInViewController: reporterUrl result:^(id  _Nullable result) {
-        NSLog(@"URL launched!");
+    [BFBrowser launchUrl: reporterUrl result:^(id  _Nullable result) {
+        [BFSDKLogger logMessage:@"Web page is loading..."];
     }];
 }
 

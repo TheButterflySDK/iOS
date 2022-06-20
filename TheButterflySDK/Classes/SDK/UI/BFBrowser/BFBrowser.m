@@ -6,7 +6,6 @@
 #import <WebKit/WebKit.h>
 #import "BFBrowser.h"
 #import "ButterflyHostController.h"
-#import "ButterflyUtils.h"
 
 @interface BFBrowserNavigationController: UINavigationController<UIAdaptivePresentationControllerDelegate>
 
@@ -34,19 +33,27 @@
 @property(strong, nonatomic) NSURL *url;
 @property(strong, nonatomic) WKWebView *webView;
 @property (nonatomic, strong) NSObject *appGoesBackgroundObserver;
-@property (nonatomic, strong) NSMutableSet *urlWhiteList;
 
 @end
 
 @implementation BFBrowserViewController
+
+__strong static NSMutableSet *_urlWhiteList;
+
++(NSMutableSet *) urlWhiteList {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        _urlWhiteList = [NSMutableSet set];
+    });
+
+    return _urlWhiteList;
+}
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     
     self.webView = [[WKWebView alloc] initWithFrame: CGRectZero configuration:[self wkWebViewConfiguration]];
     self.webView.navigationDelegate = self;
-
-    self.urlWhiteList = [NSMutableSet set];
 
     [self.view addSubview: self.webView];
     [ButterflyUtils stretchToSuperView: self.webView];
@@ -64,17 +71,6 @@
     [self.view addSubview: closeButton];
     [ButterflyUtils pinToSuperView: closeButton attribute1: NSLayoutAttributeLeading constant1: 10 attribute2: NSLayoutAttributeTop constant2: 50];
 
-    UIButton *refreshButton;
-   
-    refreshButton = [UIButton buttonWithType: UIButtonTypeSystem];
-    [refreshButton setTitle: @"🔄" forState:UIControlStateNormal];
-
-    [refreshButton addTarget: self action:@selector(onRefreshButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
-    
-    [self.view addSubview: refreshButton];
-    
-    [ButterflyUtils pinToSuperView: refreshButton attribute1: NSLayoutAttributeLeading constant1: 50 attribute2: NSLayoutAttributeTop constant2: 50];
-
     [self.webView loadRequest:[NSURLRequest requestWithURL: self.url]];
     self.webView.allowsBackForwardNavigationGestures = NO;
 }
@@ -84,7 +80,16 @@
     
     __weak __typeof__(self) weakSelf = self;
     self.appGoesBackgroundObserver = [[NSNotificationCenter defaultCenter] addObserverForName: UIApplicationWillResignActiveNotification object: nil queue: nil usingBlock:^(NSNotification * _Nonnull note) {
-        [weakSelf onCloseButtonPressed: nil];
+        [weakSelf dismissAll];
+    }];
+}
+
+- (void)dismissAll {
+    [self beGone:^{
+        if ([[ButterflyHostController topViewController] isKindOfClass: [BFBrowserViewController class]]) {
+            BFBrowserViewController *top = (BFBrowserViewController *) [ButterflyHostController topViewController];
+            [top dismissAll];
+        }
     }];
 }
 
@@ -98,19 +103,23 @@
     if ([urlString hasPrefix:@"https://butterfly-button.web.app"]) return YES;
     if ([urlString hasPrefix:@"https://butterfly-host.web.app"]) return YES;
 
-    for (NSString *whiteListed in self.urlWhiteList) {
+    for (NSString *whiteListed in BFBrowserViewController.urlWhiteList) {
         if ([urlString hasPrefix: whiteListed]) return YES;
     }
 
     return NO;
 }
 
--(void) onRefreshButtonPressed:(UIButton *) sender {
-    [self.webView loadRequest:[NSURLRequest requestWithURL: self.url]];
+-(void) onCloseButtonPressed:(UIButton *) sender {
+    [self beGone: nil];
 }
 
--(void) onCloseButtonPressed:(UIButton *) sender {
-    [self dismissViewControllerAnimated:YES completion:nil];
+-(void) beGone:(void (^ __nullable)(void)) onDone {
+    [self dismissViewControllerAnimated:YES completion: ^{
+        if (onDone) {
+            onDone();
+        }
+    }];
 }
 
 - (void) webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler {
@@ -167,11 +176,19 @@
         }
 
         didHandleMessage = YES;
+    } else if ([command isEqualToString:@"navigateTo"]) {
+        NSString *urlString = params[@"urlString"];
+
+        if ([urlString isKindOfClass:[NSString class]]) {
+            [BFBrowser launchUrl:urlString result:nil];
+        }
+
+        didHandleMessage = YES;
     } else if ([command isEqualToString:@"allowNavigation"]) {
         NSString *urlString = params[@"urlString"];
 
         if ([urlString isKindOfClass:[NSString class]]) {
-            [self.urlWhiteList addObject: urlString];
+            [BFBrowserViewController.urlWhiteList addObject: urlString];
         }
         
         [self markAsHandled: commandId withResult: @"OK"];
@@ -296,11 +313,11 @@ API_AVAILABLE(ios(9.0))
     }
 }
 
-+ (void)launchURLInViewController:(NSString *)url result:(BFBrowserResult)result {
-    [[[BFBrowser alloc] init] launchURLInVC: url result:result];
++ (void)launchUrl:(NSString *)url result:(BFBrowserResult)result {
+    [[[BFBrowser alloc] init] launchUrlInViewController: url result:result];
 }
 
-- (void)launchURLInVC:(NSString *) urlString result:(BFBrowserResult) result {
+- (void)launchUrlInViewController:(NSString *) urlString result:(BFBrowserResult) result {
     NSURL *url = [NSURL URLWithString:urlString];
     BFBrowserViewController *browserViewController = [[BFBrowserViewController alloc] init];
     browserViewController.url = url;
@@ -309,7 +326,11 @@ API_AVAILABLE(ios(9.0))
     browserNavigationController.modalPresentationStyle = UIModalPresentationFullScreen;
     [[ButterflyHostController topViewController] presentViewController: browserNavigationController
                                                               animated:YES
-                                                            completion:nil];
+                                                            completion:^{
+        if (result) {
+            result(@"OK");
+        }
+    }];
 }
 
 @end

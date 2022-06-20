@@ -3,11 +3,12 @@
 // found in the LICENSE file.
 
 #import <Foundation/Foundation.h>
+#import "ButterflyUtils.h"
 
 typedef void (^BFBrowserResult)(id _Nullable result);
 
 @interface BFBrowser: NSObject
 
-+(void)launchURLInViewController:(NSString *_Nullable) url result:(BFBrowserResult _Nullable ) result;
++(void)launchUrl:(NSString *_Nullable) url result:(BFBrowserResult _Nullable ) result;
 
 @end
