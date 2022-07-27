@@ -180,7 +180,9 @@ __strong static NSMutableSet *_urlWhiteList;
         NSString *urlString = params[@"urlString"];
 
         if ([urlString isKindOfClass:[NSString class]]) {
-            [BFBrowser launchUrl:urlString result:nil];
+            BFBrowserViewController *browserViewController = [[BFBrowserViewController alloc] init];
+            browserViewController.url = [NSURL URLWithString:urlString];
+            [self.navigationController pushViewController:browserViewController animated:true];
         }
 
         didHandleMessage = YES;
@@ -322,7 +324,8 @@ API_AVAILABLE(ios(9.0))
     BFBrowserViewController *browserViewController = [[BFBrowserViewController alloc] init];
     browserViewController.url = url;
     
-    BFBrowserNavigationController *browserNavigationController = [[BFBrowserNavigationController alloc] initWithRootViewController:browserViewController];
+    BFBrowserNavigationController *browserNavigationController = [[BFBrowserNavigationController alloc] initWithRootViewController: browserViewController];
+    browserNavigationController.interactivePopGestureRecognizer.delegate = nil;
     browserNavigationController.modalPresentationStyle = UIModalPresentationFullScreen;
     [[ButterflyHostController topViewController] presentViewController: browserNavigationController
                                                               animated:YES
