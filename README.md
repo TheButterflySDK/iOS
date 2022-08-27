@@ -17,7 +17,7 @@ Just add the pod 'TheButterflySDK' similar to the following to your Podfile:
 
 ```
 target 'MyApp' do
-  pod 'TheButterflySDK', '1.2.5'
+  pod 'TheButterflySDK', '1.3.0'
 end
 
 ```
