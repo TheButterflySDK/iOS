@@ -131,7 +131,7 @@ __strong static ButterflyUtils *_shared;
     NSData *jsonData = [NSJSONSerialization dataWithJSONObject: jsonDictionary options: NSJSONWritingPrettyPrinted error: &error];
 
     NSString* jsonString = [[NSString alloc] initWithData: jsonData encoding: NSUTF8StringEncoding];
-    NSLog(@"jsonString: %@", jsonString);
+    [BFSDKLogger logMessage:@"jsonString: %@", jsonString];
     
     return error ? nil : jsonString;
 }

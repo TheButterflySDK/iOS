@@ -19,15 +19,10 @@
 {
     [super viewDidLoad];
 
-    UIButton *btnOpenReporter = [[UIButton alloc] initWithFrame: CGRectMake(0, 0, 200, 100)];
-
-    [btnOpenReporter setTitle:@"🦋" forState: UIControlStateNormal];
-    [btnOpenReporter addTarget:self action: @selector(onOpenReporterClicked:) forControlEvents:UIControlEventTouchUpInside];
-    [self.view addSubview: btnOpenReporter];
-    btnOpenReporter.center = self.view.center;
+    [ButterflySDK useCustomColor:@"00ff00"];
 }
 
-- (void)onOpenReporterClicked: (UIButton *) sender {
+- (IBAction)onButterflyClick:(UIButton *)sender {
     [ButterflySDK openReporterWithKey:@"your-api-key"];
 }
 
