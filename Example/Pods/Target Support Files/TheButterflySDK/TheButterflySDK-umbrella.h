@@ -17,6 +17,7 @@
 #import "BFToastMessage.h"
 #import "BFUserInputHelper.h"
 #import "ButterflyUtils.h"
+#import "DeviceInfoGetter.h"
 #import "TheButterflySDK-Bridging-Header.h"
 
 FOUNDATION_EXPORT double TheButterflySDKVersionNumber;

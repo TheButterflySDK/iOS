@@ -26,6 +26,7 @@
 
 + (void)sendRequest:(NSDictionary *)jsonDictionary toUrl:(NSString *)urlString withHeaders:(NSDictionary *)headers completionCallback:(void (^)(NSString * responseString)) completionCallback;
 
++(NSString *) toJsonString:(NSDictionary *) jsonDictionary;
 +(NSData *) toJsonData:(NSDictionary *) jsonDictionary;
 +(NSDictionary *) toJsonDictionary:(NSString *) jsonString;
 

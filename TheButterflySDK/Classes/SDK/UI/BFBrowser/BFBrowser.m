@@ -6,6 +6,7 @@
 #import <WebKit/WebKit.h>
 #import "BFBrowser.h"
 #import "ButterflyHostController.h"
+#import "DeviceInfoGetter.h"
 
 @interface BFBrowserNavigationController: UINavigationController<UIAdaptivePresentationControllerDelegate>
 
@@ -165,6 +166,8 @@ __strong static NSMutableSet *_urlWhiteList;
         [self dismissViewControllerAnimated:YES completion:nil];
 
         didHandleMessage = YES;
+    } else if ([command isEqualToString:@"flutterIsReady"]) {
+        didHandleMessage = YES;
     } else if ([command isEqualToString:@"open"]) {
         NSArray *components = params[@"components"];
 
@@ -186,6 +189,13 @@ __strong static NSMutableSet *_urlWhiteList;
         }
 
         didHandleMessage = YES;
+    } else if ([command isEqualToString:@"deviceInfo"]) {
+        NSString *jsonString = [ButterflyUtils toJsonString:[DeviceInfoGetter deviceInfo]];
+        NSString *minifiedJsonString = [jsonString stringByReplacingOccurrencesOfString:@" " withString:@""];
+        minifiedJsonString = [minifiedJsonString stringByReplacingOccurrencesOfString:@"\n" withString:@""];
+
+        [self markAsHandled: commandId withResult: minifiedJsonString];
+        didHandleMessage = YES;
     } else if ([command isEqualToString:@"allowNavigation"]) {
         NSString *urlString = params[@"urlString"];
 
@@ -194,7 +204,6 @@ __strong static NSMutableSet *_urlWhiteList;
         }
         
         [self markAsHandled: commandId withResult: @"OK"];
-
         didHandleMessage = YES;
     } else if ([command isEqualToString:@"sendRequest"] && [params valueForKey:@"urlString"]) {
         NSString *urlString = [([params valueForKey:@"urlString"] ?: @"") description];
@@ -206,8 +215,6 @@ __strong static NSMutableSet *_urlWhiteList;
         [params removeObjectForKey:@"key"];
         [params removeObjectForKey:@"urlString"];
 
-        didHandleMessage = YES;
-
         [ButterflyUtils sendRequest: [NSDictionary dictionaryWithDictionary: params] toUrl:urlString withHeaders:@{@"butterfly_host_api_key": apiKey} completionCallback:^(NSString *responseString) {
             [BFSDKLogger logMessage:responseString];
 
@@ -217,6 +224,8 @@ __strong static NSMutableSet *_urlWhiteList;
             
             [self markAsHandled: commandId withResult: responseString];
         }];
+
+        didHandleMessage = YES;
     } else {
         [BFSDKLogger logMessage: @"Unhandled butterfly command: %@", command];
     }
