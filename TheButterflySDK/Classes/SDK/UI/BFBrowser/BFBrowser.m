@@ -153,8 +153,15 @@ __strong static NSMutableSet *_urlWhiteList;
 - (void)onMessageFromWebPage:(NSString *) message {
     NSArray *components = [message componentsSeparatedByString:@"::"];
     NSString *command = [[components firstObject] description];
+    BOOL didHandleMessage = NO;
+    NSString *commandId = @"";
 
-    [self onCommandFromWebPage: command withParams: [NSMutableDictionary dictionaryWithDictionary:@{@"components": components}] andCommandId: @""];
+    didHandleMessage = [self onCommandFromWebPage: command withParams: [NSMutableDictionary dictionaryWithDictionary:@{@"components": components}] andCommandId: commandId];
+
+    if (!didHandleMessage) {
+        [BFSDKLogger logMessage:@"Unhandled butterfly message: %@", message];
+        [self markAsHandled: command withResult: @""];
+    }
 }
 
 - (BOOL) onCommandFromWebPage:(NSString *) command
@@ -182,13 +189,14 @@ __strong static NSMutableSet *_urlWhiteList;
     } else if ([command isEqualToString:@"navigateTo"]) {
         NSString *urlString = params[@"urlString"];
 
-        if ([urlString isKindOfClass:[NSString class]]) {
+        if ([urlString isKindOfClass: [NSString class]]) {
             BFBrowserViewController *browserViewController = [[BFBrowserViewController alloc] init];
             browserViewController.url = [NSURL URLWithString:urlString];
             [self.navigationController pushViewController:browserViewController animated:true];
         }
 
         didHandleMessage = YES;
+        [self markAsHandled: commandId withResult: @"OK"];
     } else if ([command isEqualToString:@"deviceInfo"]) {
         NSString *jsonString = [ButterflyUtils toJsonString:[DeviceInfoGetter deviceInfo]];
         NSString *minifiedJsonString = [jsonString stringByReplacingOccurrencesOfString:@" " withString:@""];
@@ -215,6 +223,8 @@ __strong static NSMutableSet *_urlWhiteList;
         [params removeObjectForKey:@"key"];
         [params removeObjectForKey:@"urlString"];
 
+        didHandleMessage = YES;
+
         [ButterflyUtils sendRequest: [NSDictionary dictionaryWithDictionary: params] toUrl:urlString withHeaders:@{@"butterfly_host_api_key": apiKey} completionCallback:^(NSString *responseString) {
             [BFSDKLogger logMessage:responseString];
 
@@ -224,8 +234,6 @@ __strong static NSMutableSet *_urlWhiteList;
             
             [self markAsHandled: commandId withResult: responseString];
         }];
-
-        didHandleMessage = YES;
     } else {
         [BFSDKLogger logMessage: @"Unhandled butterfly command: %@", command];
     }
@@ -235,13 +243,14 @@ __strong static NSMutableSet *_urlWhiteList;
 
 - (void)userContentController:(WKUserContentController *)userContentController didReceiveScriptMessage:(WKScriptMessage *) message {
     BOOL didHandleMessage = NO;
+    NSString *commandId = @"";
     if ([[message body] isKindOfClass: [NSDictionary class]]) {
         NSMutableDictionary *commandFromJs = [NSMutableDictionary dictionaryWithDictionary: [message body]];
         NSString *commandName = [[commandFromJs valueForKey:@"commandName"] description];
-        NSString *commandId = [([commandFromJs valueForKey:@"commandId"] ?: @"") description];
+        NSString *_commandId = [([commandFromJs valueForKey:@"commandId"] ?: @"") description];
 
-        if (!commandId) {
-            commandId = @"";
+        if ([_commandId length]) {
+            commandId = _commandId;
         }
 
         [commandFromJs removeObjectForKey:@"commandName"];
@@ -252,6 +261,7 @@ __strong static NSMutableSet *_urlWhiteList;
     
     if (!didHandleMessage) {
         [BFSDKLogger logMessage:@"Unhandled butterfly message: %@", message];
+        [self markAsHandled: commandId withResult: @""];
     }
 }
 
