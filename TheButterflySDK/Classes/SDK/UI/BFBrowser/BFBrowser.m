@@ -6,7 +6,6 @@
 #import <WebKit/WebKit.h>
 #import "BFBrowser.h"
 #import "ButterflyHostController.h"
-#import "DeviceInfoGetter.h"
 
 @interface BFBrowserNavigationController: UINavigationController<UIAdaptivePresentationControllerDelegate>
 
@@ -198,13 +197,6 @@ __strong static NSMutableSet *_urlWhiteList;
 
         didHandleMessage = YES;
         [self markAsHandled: commandId withResult: @"OK"];
-    } else if ([command isEqualToString:@"deviceInfo"]) {
-        NSString *jsonString = [ButterflyUtils toJsonString:[DeviceInfoGetter deviceInfo]];
-        NSString *minifiedJsonString = [jsonString stringByReplacingOccurrencesOfString:@" " withString:@""];
-        minifiedJsonString = [minifiedJsonString stringByReplacingOccurrencesOfString:@"\n" withString:@""];
-
-        [self markAsHandled: commandId withResult: minifiedJsonString];
-        didHandleMessage = YES;
     } else if ([command isEqualToString:@"allowNavigation"]) {
         NSString *urlString = params[@"urlString"];
 
