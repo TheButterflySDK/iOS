@@ -186,6 +186,7 @@ __strong static NSMutableSet *_urlWhiteList;
         }
 
         didHandleMessage = YES;
+        [self markAsHandled: commandId withResult: @"OK"];
     } else if ([command isEqualToString:@"navigateTo"]) {
         NSString *urlString = params[@"urlString"];
 
