@@ -1,7 +1,7 @@
 # The Butterfly SDK for iOS
 
 [![Version](https://img.shields.io/cocoapods/v/TheButterflySDK.svg?style=flat)](https://cocoapods.org/pods/TheButterflySDK)
-[![License](https://img.shields.io/cocoapods/l/TheButterflySDK.svg?style=flat)](https://cocoapods.org/pods/TheButterflySDK)
+[![License](https://img.shields.io/cocoapods/l/TheButterflySDK.svg?style=flat)](https://github.com/TheButterflySDK/iOS/blob/main/LICENSE)
 [![Platform](https://img.shields.io/cocoapods/p/TheButterflySDK.svg?style=flat)](https://cocoapods.org/pods/TheButterflySDK)
 
 [The Butterfly SDK](https://github.com/TheButterflyButton/About/blob/main/README.md) helps your app to take an active part in the fight against domestic violence.
