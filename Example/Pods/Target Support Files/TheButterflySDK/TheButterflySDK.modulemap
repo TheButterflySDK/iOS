@@ -1,6 +1,0 @@
-framework module TheButterflySDK {
-  umbrella header "TheButterflySDK-umbrella.h"
-
-  export *
-  module * { export * }
-}

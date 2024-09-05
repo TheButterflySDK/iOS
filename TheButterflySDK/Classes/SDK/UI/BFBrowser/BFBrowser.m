@@ -69,7 +69,7 @@ __strong static NSMutableSet *_urlWhiteList;
     [closeButton addTarget: self action:@selector(onCloseButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
     
     [self.view addSubview: closeButton];
-    [ButterflyUtils pinToSuperView: closeButton attribute1: NSLayoutAttributeLeading constant1: 10 attribute2: NSLayoutAttributeTop constant2: 50];
+    [ButterflyUtils pinToSuperView: closeButton attribute1: NSLayoutAttributeTrailing constant1: -10 attribute2: NSLayoutAttributeTop constant2: 80];
 
     [self.webView loadRequest:[NSURLRequest requestWithURL: self.url]];
     self.webView.allowsBackForwardNavigationGestures = NO;
@@ -80,7 +80,7 @@ __strong static NSMutableSet *_urlWhiteList;
     
     __weak __typeof__(self) weakSelf = self;
     self.appGoesBackgroundObserver = [[NSNotificationCenter defaultCenter] addObserverForName: UIApplicationWillResignActiveNotification object: nil queue: nil usingBlock:^(NSNotification * _Nonnull note) {
-        [weakSelf dismissAll];
+//        [weakSelf dismissAll];
     }];
 }
 
