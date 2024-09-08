@@ -75,14 +75,14 @@ __strong static NSMutableSet *_urlWhiteList;
     self.webView.allowsBackForwardNavigationGestures = NO;
 }
 
-- (void)viewWillAppear:(BOOL)animated {
-    [super viewWillAppear: animated];
+//- (void)viewWillAppear:(BOOL)animated {
+//    [super viewWillAppear: animated];
     
-    __weak __typeof__(self) weakSelf = self;
-    self.appGoesBackgroundObserver = [[NSNotificationCenter defaultCenter] addObserverForName: UIApplicationWillResignActiveNotification object: nil queue: nil usingBlock:^(NSNotification * _Nonnull note) {
+//    __weak __typeof__(self) weakSelf = self;
+//    self.appGoesBackgroundObserver = [[NSNotificationCenter defaultCenter] addObserverForName: UIApplicationWillResignActiveNotification object: nil queue: nil usingBlock:^(NSNotification * _Nonnull note) {
 //        [weakSelf dismissAll];
-    }];
-}
+//    }];
+//}
 
 - (void)dismissAll {
     [self beGone:^{
