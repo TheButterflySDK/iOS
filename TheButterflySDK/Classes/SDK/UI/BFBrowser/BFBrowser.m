@@ -69,7 +69,7 @@ __strong static NSMutableSet *_urlWhiteList;
     [closeButton addTarget: self action:@selector(onCloseButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
     
     [self.view addSubview: closeButton];
-    [ButterflyUtils pinToSuperView: closeButton attribute1: NSLayoutAttributeTrailing constant1: -10 attribute2: NSLayoutAttributeTop constant2: 80];
+    [ButterflyUtils pinToSuperView: closeButton attribute1: NSLayoutAttributeTrailing constant1: -10 attribute2: NSLayoutAttributeTop constant2: 60];
 
     [self.webView loadRequest:[NSURLRequest requestWithURL: self.url]];
     self.webView.allowsBackForwardNavigationGestures = NO;
@@ -183,6 +183,11 @@ __strong static NSMutableSet *_urlWhiteList;
         if (isValid) {
             [[UIApplication sharedApplication] openURL: url];
         }
+
+        didHandleMessage = YES;
+        [self markAsHandled: commandId withResult: @"OK"];
+    } else if ([command isEqualToString:@"backToPreviousScreen"]) {
+        [self.navigationController popViewControllerAnimated: true];
 
         didHandleMessage = YES;
         [self markAsHandled: commandId withResult: @"OK"];
