@@ -69,20 +69,20 @@ __strong static NSMutableSet *_urlWhiteList;
     [closeButton addTarget: self action:@selector(onCloseButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
     
     [self.view addSubview: closeButton];
-    [ButterflyUtils pinToSuperView: closeButton attribute1: NSLayoutAttributeLeading constant1: 10 attribute2: NSLayoutAttributeTop constant2: 50];
+    [ButterflyUtils pinToSuperView: closeButton attribute1: NSLayoutAttributeTrailing constant1: -10 attribute2: NSLayoutAttributeTop constant2: 60];
 
     [self.webView loadRequest:[NSURLRequest requestWithURL: self.url]];
     self.webView.allowsBackForwardNavigationGestures = NO;
 }
 
-- (void)viewWillAppear:(BOOL)animated {
-    [super viewWillAppear: animated];
+//- (void)viewWillAppear:(BOOL)animated {
+//    [super viewWillAppear: animated];
     
-    __weak __typeof__(self) weakSelf = self;
-    self.appGoesBackgroundObserver = [[NSNotificationCenter defaultCenter] addObserverForName: UIApplicationWillResignActiveNotification object: nil queue: nil usingBlock:^(NSNotification * _Nonnull note) {
-        [weakSelf dismissAll];
-    }];
-}
+//    __weak __typeof__(self) weakSelf = self;
+//    self.appGoesBackgroundObserver = [[NSNotificationCenter defaultCenter] addObserverForName: UIApplicationWillResignActiveNotification object: nil queue: nil usingBlock:^(NSNotification * _Nonnull note) {
+//        [weakSelf dismissAll];
+//    }];
+//}
 
 - (void)dismissAll {
     [self beGone:^{
@@ -186,6 +186,11 @@ __strong static NSMutableSet *_urlWhiteList;
 
         didHandleMessage = YES;
         [self markAsHandled: commandId withResult: @"OK"];
+    } else if ([command isEqualToString:@"backToPreviousScreen"]) {
+        [self.navigationController popViewControllerAnimated: true];
+
+        didHandleMessage = YES;
+        [self markAsHandled: commandId withResult: @"OK"];
     } else if ([command isEqualToString:@"navigateTo"]) {
         NSString *urlString = params[@"urlString"];
 
@@ -276,7 +281,6 @@ __strong static NSMutableSet *_urlWhiteList;
 
 @end
 
-API_AVAILABLE(ios(9.0))
 @interface BFBrowserURLSession: NSObject <SFSafariViewControllerDelegate>
 
 @property(copy, nonatomic) BFBrowserResult browserResult;
@@ -290,7 +294,6 @@ API_AVAILABLE(ios(9.0))
 
 @end
 
-API_AVAILABLE(ios(9.0))
 @interface BFBrowser()
 
 @property(strong, nonatomic) BFBrowserURLSession *currentSession;
