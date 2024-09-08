@@ -281,7 +281,6 @@ __strong static NSMutableSet *_urlWhiteList;
 
 @end
 
-API_AVAILABLE(ios(9.0))
 @interface BFBrowserURLSession: NSObject <SFSafariViewControllerDelegate>
 
 @property(copy, nonatomic) BFBrowserResult browserResult;
@@ -295,7 +294,6 @@ API_AVAILABLE(ios(9.0))
 
 @end
 
-API_AVAILABLE(ios(9.0))
 @interface BFBrowser()
 
 @property(strong, nonatomic) BFBrowserURLSession *currentSession;
