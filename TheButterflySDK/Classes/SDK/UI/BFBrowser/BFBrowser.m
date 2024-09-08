@@ -181,7 +181,9 @@ __strong static NSMutableSet *_urlWhiteList;
         NSURL *url = [NSURL URLWithString: urlString];
         BOOL isValid = [url scheme] && [url host];
         if (isValid) {
-            [[UIApplication sharedApplication] openURL: url];
+            [[UIApplication sharedApplication] openURL: url options: @{} completionHandler: ^(BOOL success) {
+                //
+            }];
         }
 
         didHandleMessage = YES;
