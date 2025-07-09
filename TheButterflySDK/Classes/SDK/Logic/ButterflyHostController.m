@@ -22,9 +22,11 @@
 
 @implementation ButterflyHostController
 
+NSString* const butterflySdkVersion = @"2.1.0";
+
 __strong static ButterflyHostController* _shared;
 
-+(ButterflyHostController*) shared {
++ (ButterflyHostController*) shared {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken,^{
         _shared = [[ButterflyHostController alloc] initWithCoder:nil];
@@ -33,11 +35,13 @@ __strong static ButterflyHostController* _shared;
     return _shared;
 }
 
--(instancetype) init {
+#pragma mark - Initialize
+
+- (instancetype) init {
     return [ButterflyHostController shared];
 }
 
--(instancetype) initWithCoder:(NSCoder*) coder {
+- (instancetype) initWithCoder:(NSCoder*) coder {
     if(self = [super init]) {
         return self;
     }
@@ -45,10 +49,7 @@ __strong static ButterflyHostController* _shared;
     return nil;
 }
 
-+ (void)openReporterWithKey:(NSString *)key {
-    [[ButterflyHostController shared] openReporterInViewController:
-     [ButterflyHostController topViewController] usingKey:key];
-}
+#pragma mark - Interface Settings
 
 + (void)overrideLanguage:(NSString *) languageCode {
     [ButterflyHostController shared].languageCodeToOverride = languageCode;
@@ -62,49 +63,84 @@ __strong static ButterflyHostController* _shared;
     [ButterflyHostController shared].customColorHexa = colorHexa ?: @"n";
 }
 
-+ (void)grabReportFromViewController:(UIViewController *)viewController usingKey:(NSString *)key {
-    [[ButterflyHostController shared] openReporterInViewController: viewController usingKey: key];
+#pragma mark - Reporter Handling
+
++ (void)openReporterWithKey:(NSString *)key {
+    [[ButterflyHostController shared] openReporterInViewController:[ButterflyHostController topViewController]
+                                                          usingKey:key];
 }
 
--(void) openReporterInViewController:(UIViewController*) viewController usingKey:(NSString*) key {
-    NSString* languageCode;
-    if (self.languageCodeToOverride && [self.languageCodeToOverride length] > 0) {
-        languageCode = self.languageCodeToOverride;
-    } else {
-        // Device's language:  https://github.com/stefalda/ReactNativeLocalization/issues/178#issuecomment-581140974
-        languageCode = [[[[[NSLocale preferredLanguages] objectAtIndex:0] componentsSeparatedByString:@"-"] firstObject] description];
-
-        if (!languageCode) {
-//      if (!languageCode && @available(iOS 10.0, *)) { // Warning: @available does not guard availability here if (@available); use if (@available) instead
-            if (@available(iOS 10.0, *)) {
-                // App's language
-                languageCode = [[NSLocale currentLocale] languageCode];
-            } else {
-                // Fallback on earlier versions
-            }
-        }
-
-        if (!languageCode) {
-            // App's localized string
-            NSString* bundlePath = [[NSBundle bundleForClass:[BFUserInputHelper class]] pathForResource:@"TheButterflySDK" ofType:@"bundle"];
-            NSBundle* bundle = [NSBundle bundleWithPath: bundlePath];
-            languageCode = [[bundle localizedStringForKey:@"language_code" value:@"EN" table:nil] lowercaseString] ?: @"EN";
-        }
-    }
-
+- (void)openReporterInViewController:(UIViewController*)viewController
+                            usingKey:(NSString*)key {
+    NSString * languageCode = [self extractedLanguageCode];
     NSString* countryToOverride = self.countryCodeToOverride ?: @"n";
-
-    NSString* butterflySdkVersion = @"2.0.0";
     NSString* customColorHexa = self.customColorHexa ?: @"n";
 
     NSString* reporterUrl = [NSString stringWithFormat:@"https://butterfly-button.web.app/reporter/?language=%@&api_key=%@&sdk-version=%@&override_country=%@&colorize=%@&is-embedded-via-mobile-sdk=1", languageCode, key, butterflySdkVersion, countryToOverride, customColorHexa];
 
-    [BFBrowser launchUrl: reporterUrl result:^(id  _Nullable result) {
+    [BFBrowser launchUrl:reporterUrl
+                  result:^(id  _Nullable result) {
         [BFSDKLogger logMessage:@"Web page is loading..."];
     }];
 }
 
-+ (UIViewController *) topViewController {
+// TODO: Why this?
++ (void)grabReportFromViewController:(UIViewController *)viewController
+                            usingKey:(NSString *)key {
+    [[ButterflyHostController shared] openReporterInViewController:viewController
+                                                          usingKey:key];
+}
+
+#pragma mark - Reporter Handling via deep link
+
++ (void)handleIncomingURL:(NSURL *)url
+                   apiKey:(NSString *)apiKey {
+    [[ButterflyHostController shared] handleIncomingURLInViewController:[ButterflyHostController topViewController]
+                                                                    url:url
+                                                                 apiKey:apiKey];
+}
+
+- (void)handleIncomingURLInViewController:(UIViewController*)viewController
+                                      url:(NSURL *)url
+                                   apiKey:(NSString *)apiKey {
+    NSURLComponents *components = [NSURLComponents componentsWithURL:url resolvingAgainstBaseURL:NO];
+    NSArray<NSURLQueryItem *> *items = components.queryItems;
+
+    NSMutableDictionary<NSString *, NSString *> *params = [NSMutableDictionary dictionary];
+    for (NSURLQueryItem *item in items) {
+        if (item.name && item.value) {
+            params[item.name] = item.value;
+        }
+    }
+    
+    // extract the butterfly relevant params
+    [BFBrowser getButterflyParams:params
+                       complition:^(NSString *)butterflyParams {
+        NSString * languageCode = [self extractedLanguageCode];
+        NSString* countryToOverride = self.countryCodeToOverride ?: @"n";
+        NSString* customColorHexa = self.customColorHexa ?: @"n";
+
+        NSString* reporterUrl = [NSString stringWithFormat:@"https://butterfly-button.web.app/reporter/?language=%@&api_key=%@&sdk-version=%@&override_country=%@&colorize=%@&is-embedded-via-mobile-sdk=1&%@", languageCode, apiKey, butterflySdkVersion, countryToOverride, customColorHexa, butterflyParams];
+
+        [BFBrowser launchUrl:reporterUrl
+                      result:^(id  _Nullable result) {
+            [BFSDKLogger logMessage:@"Web page is loading..."];
+        }];
+    }];
+}
+
++ (void)handleUserActivity:(NSUserActivity *)userActivity {
+
+}
+
++ (void)openURLContexts:(NSSet<UIOpenURLContext *> *)urlContext
+                 apiKey:(NSString *)apiKey {
+
+}
+
+#pragma mark - Helpers
+
++ (UIViewController *)topViewController {
     return [self topViewControllerFromViewController:
             [UIApplication sharedApplication].keyWindow.rootViewController];
 }
@@ -139,6 +175,37 @@ __strong static ButterflyHostController* _shared;
     }
 
     return viewController;
+}
+
+- (NSString *)extractedLanguageCode {
+    NSString* languageCode;
+    if (self.languageCodeToOverride && [self.languageCodeToOverride length] > 0) {
+        languageCode = self.languageCodeToOverride;
+    } else {
+        // Device's language:  https://github.com/stefalda/ReactNativeLocalization/issues/178#issuecomment-581140974
+        languageCode = [[[[[NSLocale preferredLanguages] objectAtIndex:0] componentsSeparatedByString:@"-"] firstObject] description];
+        
+        if (!languageCode) {
+            //      if (!languageCode && @available(iOS 10.0, *)) { // Warning: @available does not guard availability here if (@available); use if (@available) instead
+            if (@available(iOS 10.0, *)) {
+                // App's language
+                languageCode = [[NSLocale currentLocale] languageCode];
+            } else {
+                // Fallback on earlier versions
+            }
+        }
+        
+        if (!languageCode) {
+            // App's localized string
+            NSString* bundlePath = [[NSBundle bundleForClass:[BFUserInputHelper class]] pathForResource:@"TheButterflySDK"
+                                                                                                 ofType:@"bundle"];
+            NSBundle* bundle = [NSBundle bundleWithPath: bundlePath];
+            languageCode = [[bundle localizedStringForKey:@"language_code"
+                                                    value:@"EN"
+                                                    table:nil] lowercaseString] ?: @"EN";
+        }
+    }
+    return languageCode;
 }
 
 @end

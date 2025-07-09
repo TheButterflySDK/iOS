@@ -4,7 +4,8 @@
 //
 //  Created by Perry on 02/28/2022.
 //  Copyright (c) 2022 Perry. All rights reserved.
-//openReporterInViewController
+//
+//  openReporterInViewController
 
 #import "BFViewController.h"
 #import "ButterflySDK.h"
@@ -15,8 +16,7 @@
 
 @implementation BFViewController
 
-- (void)viewDidLoad
-{
+- (void)viewDidLoad {
     [super viewDidLoad];
 
     [ButterflySDK useCustomColor:@"00ff00"];
@@ -26,8 +26,7 @@
     [ButterflySDK openReporterWithKey:@"your-api-key"];
 }
 
-- (void)didReceiveMemoryWarning
-{
+- (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }

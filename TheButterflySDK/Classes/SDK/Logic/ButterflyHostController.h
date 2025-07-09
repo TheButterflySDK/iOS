@@ -11,11 +11,23 @@
 
 @interface ButterflyHostController: NSObject
 
-+(void) openReporterWithKey:(NSString*) key;
-+(void) overrideLanguage:(NSString *) languageCode;
-+(void) overrideCountry:(NSString *) countryCode;
-+(void) useCustomColor:(NSString *) colorHexa;
++ (void)overrideLanguage:(NSString *)languageCode;
++ (void)overrideCountry:(NSString *)countryCode;
++ (void)useCustomColor:(NSString *)colorHexa;
 
-+(UIViewController *) topViewController;
++ (void)openReporterWithKey:(NSString *)key;
+
+
++ (void)handleIncomingURL:(NSURL *)url
+                   apiKey:(NSString *)apiKey;
+
++ (void)handleUserActivity:(NSUserActivity *)userActivity;
+
+
++ (void)openURLContexts:(NSSet<UIOpenURLContext *> *)urlContext
+                 apiKey:(NSString *)apiKey API_AVAILABLE(ios(13.0));
+
+
++(UIViewController *)topViewController;
 
 @end
