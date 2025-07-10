@@ -24,9 +24,8 @@
 + (void)handleUserActivity:(NSUserActivity *)userActivity
                     apiKey:(NSString *)apiKey;
 
-+ (void)openURLContexts:(NSSet<UIOpenURLContext *> *)urlContext
++ (void)openURLContexts:(UIOpenURLContext *)urlContext
                  apiKey:(NSString *)apiKey API_AVAILABLE(ios(13.0));
-
 
 +(UIViewController *)topViewController;
 

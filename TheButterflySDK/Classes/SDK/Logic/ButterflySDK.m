@@ -71,7 +71,7 @@ __strong static ButterflySDK* _shared;
     }];
 }
 
-+ (void)openURLContexts:(NSSet<UIOpenURLContext *> *)urlContext
++ (void)openURLContexts:(UIOpenURLContext *)urlContext
                  apiKey:(NSString *)apiKey {
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
         [ButterflyHostController openURLContexts:urlContext

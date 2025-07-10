@@ -103,18 +103,10 @@ __strong static ButterflyHostController* _shared;
 - (void)handleIncomingURLInViewController:(UIViewController*)viewController
                                       url:(NSURL *)url
                                    apiKey:(NSString *)apiKey {
-    NSURLComponents *components = [NSURLComponents componentsWithURL:url resolvingAgainstBaseURL:NO];
-    NSArray<NSURLQueryItem *> *items = components.queryItems;
-
-    NSMutableDictionary<NSString *, NSString *> *params = [NSMutableDictionary dictionary];
-    for (NSURLQueryItem *item in items) {
-        if (item.name && item.value) {
-            params[item.name] = item.value;
-        }
-    }
+    NSMutableDictionary<NSString *, NSString *> *urlParams = [self extractParamsFromURL:url];
     
     // extract the butterfly relevant params
-    [BFBrowser getButterflyParams:params
+    [BFBrowser getButterflyParams:urlParams
                        complition:^(NSString *)butterflyParams {
         NSString * languageCode = [self extractedLanguageCode];
         NSString* countryToOverride = self.countryCodeToOverride ?: @"n";
@@ -134,27 +126,59 @@ __strong static ButterflyHostController* _shared;
     [[ButterflyHostController shared] handleUserActivityInViewController:[ButterflyHostController topViewController]
                                                             userActivity:userActivity
                                                                   apiKey:apiKey];
-
 }
 
 - (void)handleUserActivityInViewController:(UIViewController*)viewController
                               userActivity:(NSUserActivity *)userActivity
                                     apiKey:(NSString *)apiKey {
+    if ([userActivity.activityType isEqualToString:NSUserActivityTypeBrowsingWeb]) {
+        NSURL *url = userActivity.webpageURL;
+        NSMutableDictionary<NSString *, NSString *> *urlParams = [self extractParamsFromURL:url];
 
+        // extract the butterfly relevant params
+        [BFBrowser getButterflyParams:urlParams
+                           complition:^(NSString *)butterflyParams {
+            NSString * languageCode = [self extractedLanguageCode];
+            NSString* countryToOverride = self.countryCodeToOverride ?: @"n";
+            NSString* customColorHexa = self.customColorHexa ?: @"n";
+
+            NSString* reporterUrl = [NSString stringWithFormat:@"https://butterfly-button.web.app/reporter/?language=%@&api_key=%@&sdk-version=%@&override_country=%@&colorize=%@&is-embedded-via-mobile-sdk=1&%@", languageCode, apiKey, butterflySdkVersion, countryToOverride, customColorHexa, butterflyParams];
+
+            [BFBrowser launchUrl:reporterUrl
+                          result:^(id  _Nullable result) {
+                [BFSDKLogger logMessage:@"Web page is loading..."];
+            }];
+        }];
+    }
 }
 
-+ (void)openURLContexts:(NSSet<UIOpenURLContext *> *)urlContext
++ (void)openURLContexts:(UIOpenURLContext *)urlContext
                  apiKey:(NSString *)apiKey {
     [[ButterflyHostController shared] openURLContextsInViewController:[ButterflyHostController topViewController]
                                                            urlContext:urlContext
                                                                  apiKey:apiKey];
-
 }
 
 - (void)openURLContextsInViewController:(UIViewController*)viewController
-                             urlContext:(NSSet<UIOpenURLContext *> *)urlContext
+                             urlContext:(UIOpenURLContext *)urlContext
                                  apiKey:(NSString *)apiKey {
+    NSURL *url = urlContext.URL;
+    NSMutableDictionary<NSString *, NSString *> *urlParams = [self extractParamsFromURL:url];
 
+    // extract the butterfly relevant params
+    [BFBrowser getButterflyParams:urlParams
+                       complition:^(NSString *)butterflyParams {
+        NSString * languageCode = [self extractedLanguageCode];
+        NSString* countryToOverride = self.countryCodeToOverride ?: @"n";
+        NSString* customColorHexa = self.customColorHexa ?: @"n";
+
+        NSString* reporterUrl = [NSString stringWithFormat:@"https://butterfly-button.web.app/reporter/?language=%@&api_key=%@&sdk-version=%@&override_country=%@&colorize=%@&is-embedded-via-mobile-sdk=1&%@", languageCode, apiKey, butterflySdkVersion, countryToOverride, customColorHexa, butterflyParams];
+
+        [BFBrowser launchUrl:reporterUrl
+                      result:^(id  _Nullable result) {
+            [BFSDKLogger logMessage:@"Web page is loading..."];
+        }];
+    }];
 }
 
 #pragma mark - Helpers
@@ -225,6 +249,19 @@ __strong static ButterflyHostController* _shared;
         }
     }
     return languageCode;
+}
+
+- (NSMutableDictionary<NSString *, NSString *> *)extractParamsFromURL:(NSURL *)url {
+    NSURLComponents *components = [NSURLComponents componentsWithURL:url resolvingAgainstBaseURL:NO];
+    NSArray<NSURLQueryItem *> *items = components.queryItems;
+    
+    NSMutableDictionary<NSString *, NSString *> *params = [NSMutableDictionary dictionary];
+    for (NSURLQueryItem *item in items) {
+        if (item.name && item.value) {
+            params[item.name] = item.value;
+        }
+    }
+    return params;
 }
 
 @end
