@@ -1,5 +1,5 @@
 PODS:
-  - TheButterflySDK (1.3.0)
+  - TheButterflySDK (2.0.0)
 
 DEPENDENCIES:
   - TheButterflySDK (from `../`)
@@ -9,8 +9,8 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
-  TheButterflySDK: 57378292912ebaba0953a59ce26c7145855d34c9
+  TheButterflySDK: 782328a034fee723d6ece8b20cdad2d66b7d1dbd
 
-PODFILE CHECKSUM: 73df4a4f17074390fe58232fadcd84b58916abb1
+PODFILE CHECKSUM: 80ae48b1b142c5df99bc18080b1172521f42b8df
 
-COCOAPODS: 1.11.2
+COCOAPODS: 1.16.2
