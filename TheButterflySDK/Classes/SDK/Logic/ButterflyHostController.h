@@ -21,8 +21,8 @@
 + (void)handleIncomingURL:(NSURL *)url
                    apiKey:(NSString *)apiKey;
 
-+ (void)handleUserActivity:(NSUserActivity *)userActivity;
-
++ (void)handleUserActivity:(NSUserActivity *)userActivity
+                    apiKey:(NSString *)apiKey;
 
 + (void)openURLContexts:(NSSet<UIOpenURLContext *> *)urlContext
                  apiKey:(NSString *)apiKey API_AVAILABLE(ios(13.0));

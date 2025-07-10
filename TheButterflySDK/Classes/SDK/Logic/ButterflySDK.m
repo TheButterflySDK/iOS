@@ -63,9 +63,11 @@ __strong static ButterflySDK* _shared;
     }];
 }
 
-+ (void)handleUserActivity:(NSUserActivity *)userActivity {
++ (void)handleUserActivity:(NSUserActivity *)userActivity
+                    apiKey:(NSString *)apiKey {
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-        [ButterflyHostController handleUserActivity:userActivity];
+        [ButterflyHostController handleUserActivity:userActivity
+                                             apiKey:apiKey];
     }];
 }
 
@@ -76,8 +78,5 @@ __strong static ButterflySDK* _shared;
                                           apiKey:apiKey];
     }];
 }
-
-
-
 
 @end

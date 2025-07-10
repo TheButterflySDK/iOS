@@ -129,12 +129,31 @@ __strong static ButterflyHostController* _shared;
     }];
 }
 
-+ (void)handleUserActivity:(NSUserActivity *)userActivity {
++ (void)handleUserActivity:(NSUserActivity *)userActivity
+                    apiKey:(NSString *)apiKey {
+    [[ButterflyHostController shared] handleUserActivityInViewController:[ButterflyHostController topViewController]
+                                                            userActivity:userActivity
+                                                                  apiKey:apiKey];
+
+}
+
+- (void)handleUserActivityInViewController:(UIViewController*)viewController
+                              userActivity:(NSUserActivity *)userActivity
+                                    apiKey:(NSString *)apiKey {
 
 }
 
 + (void)openURLContexts:(NSSet<UIOpenURLContext *> *)urlContext
                  apiKey:(NSString *)apiKey {
+    [[ButterflyHostController shared] openURLContextsInViewController:[ButterflyHostController topViewController]
+                                                           urlContext:urlContext
+                                                                 apiKey:apiKey];
+
+}
+
+- (void)openURLContextsInViewController:(UIViewController*)viewController
+                             urlContext:(NSSet<UIOpenURLContext *> *)urlContext
+                                 apiKey:(NSString *)apiKey {
 
 }
 
