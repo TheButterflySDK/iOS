@@ -9,6 +9,10 @@ typedef void (^BFBrowserResult)(id _Nullable result);
 
 @interface BFBrowser: NSObject
 
-+(void)launchUrl:(NSString *_Nullable) url result:(BFBrowserResult _Nullable ) result;
++(void)launchUrl:(NSString *_Nullable)url
+          result:(BFBrowserResult _Nullable )result;
+
++ (void)fetchButterflyParamsFromURL:(NSMutableDictionary<NSString *, NSString *> *_Nullable)urlParams
+                         completion:(void (^_Nonnull)(NSString * _Nullable butterflyParams))completion;
 
 @end

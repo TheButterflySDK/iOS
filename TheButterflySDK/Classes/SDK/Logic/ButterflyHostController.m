@@ -106,8 +106,8 @@ __strong static ButterflyHostController* _shared;
     NSMutableDictionary<NSString *, NSString *> *urlParams = [self extractParamsFromURL:url];
     
     // extract the butterfly relevant params
-    [BFBrowser getButterflyParams:urlParams
-                       complition:^(NSString *)butterflyParams {
+    [BFBrowser fetchButterflyParamsFromURL:urlParams
+                                completion:^(NSString * _Nullable butterflyParams) {
         NSString * languageCode = [self extractedLanguageCode];
         NSString* countryToOverride = self.countryCodeToOverride ?: @"n";
         NSString* customColorHexa = self.customColorHexa ?: @"n";
@@ -136,8 +136,8 @@ __strong static ButterflyHostController* _shared;
         NSMutableDictionary<NSString *, NSString *> *urlParams = [self extractParamsFromURL:url];
 
         // extract the butterfly relevant params
-        [BFBrowser getButterflyParams:urlParams
-                           complition:^(NSString *)butterflyParams {
+        [BFBrowser fetchButterflyParamsFromURL:urlParams
+                                    completion:^(NSString * _Nullable butterflyParams) {
             NSString * languageCode = [self extractedLanguageCode];
             NSString* countryToOverride = self.countryCodeToOverride ?: @"n";
             NSString* customColorHexa = self.customColorHexa ?: @"n";
@@ -166,8 +166,8 @@ __strong static ButterflyHostController* _shared;
     NSMutableDictionary<NSString *, NSString *> *urlParams = [self extractParamsFromURL:url];
 
     // extract the butterfly relevant params
-    [BFBrowser getButterflyParams:urlParams
-                       complition:^(NSString *)butterflyParams {
+    [BFBrowser fetchButterflyParamsFromURL:urlParams
+                                completion:^(NSString * _Nullable butterflyParams) {
         NSString * languageCode = [self extractedLanguageCode];
         NSString* countryToOverride = self.countryCodeToOverride ?: @"n";
         NSString* customColorHexa = self.customColorHexa ?: @"n";

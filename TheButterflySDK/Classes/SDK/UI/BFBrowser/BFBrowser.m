@@ -332,11 +332,14 @@ __strong static NSMutableSet *_urlWhiteList;
     }
 }
 
-+ (void)launchUrl:(NSString *)url result:(BFBrowserResult)result {
-    [[[BFBrowser alloc] init] launchUrlInViewController: url result:result];
++ (void)launchUrl:(NSString *)url
+           result:(BFBrowserResult)result {
+    [[[BFBrowser alloc] init] launchUrlInViewController:url
+                                                 result:result];
 }
 
-- (void)launchUrlInViewController:(NSString *) urlString result:(BFBrowserResult) result {
+- (void)launchUrlInViewController:(NSString *)urlString
+                           result:(BFBrowserResult)result {
     NSURL *url = [NSURL URLWithString:urlString];
     BFBrowserViewController *browserViewController = [[BFBrowserViewController alloc] init];
     browserViewController.url = url;
@@ -351,6 +354,11 @@ __strong static NSMutableSet *_urlWhiteList;
             result(@"OK");
         }
     }];
+}
+
++ (void)fetchButterflyParamsFromURL:(NSMutableDictionary<NSString *, NSString *> *_Nullable)urlParams
+                         completion:(void (^_Nonnull)(NSString * _Nullable butterflyParams))completion {
+    // TODO: needs to create the server call to get the params to lunch the webviw
 }
 
 @end
