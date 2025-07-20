@@ -27,6 +27,6 @@
 + (void)openURLContexts:(UIOpenURLContext *)urlContext
                  apiKey:(NSString *)apiKey API_AVAILABLE(ios(13.0));
 
-+(UIViewController *)topViewController;
++ (UIViewController *)topViewController;
 
 @end

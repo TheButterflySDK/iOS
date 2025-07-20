@@ -93,86 +93,39 @@ __strong static ButterflyHostController* _shared;
 
 #pragma mark - Reporter Handling via deep link
 
-+ (void)handleIncomingURL:(NSURL *)url
-                   apiKey:(NSString *)apiKey {
-    [[ButterflyHostController shared] handleIncomingURLInViewController:[ButterflyHostController topViewController]
-                                                                    url:url
-                                                                 apiKey:apiKey];
++ (void)handleIncomingURL:(NSURL *)url apiKey:(NSString *)apiKey {
+    [[ButterflyHostController shared] handleURL:url
+                                         apiKey:apiKey
+                                 viewController:[ButterflyHostController topViewController]];
 }
 
-- (void)handleIncomingURLInViewController:(UIViewController*)viewController
-                                      url:(NSURL *)url
-                                   apiKey:(NSString *)apiKey {
-    NSMutableDictionary<NSString *, NSString *> *urlParams = [self extractParamsFromURL:url];
-    
-    // extract the butterfly relevant params
-    [BFBrowser fetchButterflyParamsFromURL:urlParams
-                                completion:^(NSString * _Nullable butterflyParams) {
-        NSString * languageCode = [self extractedLanguageCode];
-        NSString* countryToOverride = self.countryCodeToOverride ?: @"n";
-        NSString* customColorHexa = self.customColorHexa ?: @"n";
-
-        NSString* reporterUrl = [NSString stringWithFormat:@"https://butterfly-button.web.app/reporter/?language=%@&api_key=%@&sdk-version=%@&override_country=%@&colorize=%@&is-embedded-via-mobile-sdk=1&%@", languageCode, apiKey, butterflySdkVersion, countryToOverride, customColorHexa, butterflyParams];
-
-        [BFBrowser launchUrl:reporterUrl
-                      result:^(id  _Nullable result) {
-            [BFSDKLogger logMessage:@"Web page is loading..."];
-        }];
-    }];
-}
-
-+ (void)handleUserActivity:(NSUserActivity *)userActivity
-                    apiKey:(NSString *)apiKey {
-    [[ButterflyHostController shared] handleUserActivityInViewController:[ButterflyHostController topViewController]
-                                                            userActivity:userActivity
-                                                                  apiKey:apiKey];
-}
-
-- (void)handleUserActivityInViewController:(UIViewController*)viewController
-                              userActivity:(NSUserActivity *)userActivity
-                                    apiKey:(NSString *)apiKey {
++ (void)handleUserActivity:(NSUserActivity *)userActivity apiKey:(NSString *)apiKey {
     if ([userActivity.activityType isEqualToString:NSUserActivityTypeBrowsingWeb]) {
         NSURL *url = userActivity.webpageURL;
-        NSMutableDictionary<NSString *, NSString *> *urlParams = [self extractParamsFromURL:url];
-
-        // extract the butterfly relevant params
-        [BFBrowser fetchButterflyParamsFromURL:urlParams
-                                    completion:^(NSString * _Nullable butterflyParams) {
-            NSString * languageCode = [self extractedLanguageCode];
-            NSString* countryToOverride = self.countryCodeToOverride ?: @"n";
-            NSString* customColorHexa = self.customColorHexa ?: @"n";
-
-            NSString* reporterUrl = [NSString stringWithFormat:@"https://butterfly-button.web.app/reporter/?language=%@&api_key=%@&sdk-version=%@&override_country=%@&colorize=%@&is-embedded-via-mobile-sdk=1&%@", languageCode, apiKey, butterflySdkVersion, countryToOverride, customColorHexa, butterflyParams];
-
-            [BFBrowser launchUrl:reporterUrl
-                          result:^(id  _Nullable result) {
-                [BFSDKLogger logMessage:@"Web page is loading..."];
-            }];
-        }];
+        [[ButterflyHostController shared] handleURL:url
+                                             apiKey:apiKey
+                                     viewController:[ButterflyHostController topViewController]];
     }
 }
 
-+ (void)openURLContexts:(UIOpenURLContext *)urlContext
-                 apiKey:(NSString *)apiKey {
-    [[ButterflyHostController shared] openURLContextsInViewController:[ButterflyHostController topViewController]
-                                                           urlContext:urlContext
-                                                                 apiKey:apiKey];
++ (void)openURLContexts:(UIOpenURLContext *)urlContext apiKey:(NSString *)apiKey {
+    [[ButterflyHostController shared] handleURL:urlContext.URL
+                                         apiKey:apiKey
+                                 viewController:[ButterflyHostController topViewController]];
 }
 
-- (void)openURLContextsInViewController:(UIViewController*)viewController
-                             urlContext:(UIOpenURLContext *)urlContext
-                                 apiKey:(NSString *)apiKey {
-    NSURL *url = urlContext.URL;
+- (void)handleURL:(NSURL *)url
+           apiKey:(NSString *)apiKey
+   viewController:(UIViewController *)viewController {
     NSMutableDictionary<NSString *, NSString *> *urlParams = [self extractParamsFromURL:url];
 
-    // extract the butterfly relevant params
     [BFBrowser fetchButterflyParamsFromURL:urlParams
                                 completion:^(NSString * _Nullable butterflyParams) {
         NSString * languageCode = [self extractedLanguageCode];
         NSString* countryToOverride = self.countryCodeToOverride ?: @"n";
         NSString* customColorHexa = self.customColorHexa ?: @"n";
 
-        NSString* reporterUrl = [NSString stringWithFormat:@"https://butterfly-button.web.app/reporter/?language=%@&api_key=%@&sdk-version=%@&override_country=%@&colorize=%@&is-embedded-via-mobile-sdk=1&%@", languageCode, apiKey, butterflySdkVersion, countryToOverride, customColorHexa, butterflyParams];
+        NSString* reporterUrl = [NSString stringWithFormat:@"https://butterfly-button.web.app/reporter/?language=%@&api_key=%@&sdk-version=%@&override_country=%@&colorize=%@&is-embedded-via-mobile-sdk=1&extraParams=%@", languageCode, apiKey, butterflySdkVersion, countryToOverride, customColorHexa, butterflyParams];
 
         [BFBrowser launchUrl:reporterUrl
                       result:^(id  _Nullable result) {
