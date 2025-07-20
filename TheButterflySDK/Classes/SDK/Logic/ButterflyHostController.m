@@ -84,22 +84,17 @@ __strong static ButterflyHostController* _shared;
     }];
 }
 
-// TODO: Why this?
-+ (void)grabReportFromViewController:(UIViewController *)viewController
-                            usingKey:(NSString *)key {
-    [[ButterflyHostController shared] openReporterInViewController:viewController
-                                                          usingKey:key];
-}
-
 #pragma mark - Reporter Handling via deep link
 
-+ (void)handleIncomingURL:(NSURL *)url apiKey:(NSString *)apiKey {
++ (void)handleIncomingURL:(NSURL *)url
+                   apiKey:(NSString *)apiKey {
     [[ButterflyHostController shared] handleURL:url
                                          apiKey:apiKey
                                  viewController:[ButterflyHostController topViewController]];
 }
 
-+ (void)handleUserActivity:(NSUserActivity *)userActivity apiKey:(NSString *)apiKey {
++ (void)handleUserActivity:(NSUserActivity *)userActivity
+                    apiKey:(NSString *)apiKey {
     if ([userActivity.activityType isEqualToString:NSUserActivityTypeBrowsingWeb]) {
         NSURL *url = userActivity.webpageURL;
         [[ButterflyHostController shared] handleURL:url
@@ -108,7 +103,8 @@ __strong static ButterflyHostController* _shared;
     }
 }
 
-+ (void)openURLContexts:(UIOpenURLContext *)urlContext apiKey:(NSString *)apiKey {
++ (void)openURLContexts:(UIOpenURLContext *)urlContext
+                 apiKey:(NSString *)apiKey {
     [[ButterflyHostController shared] handleURL:urlContext.URL
                                          apiKey:apiKey
                                  viewController:[ButterflyHostController topViewController]];
@@ -120,6 +116,7 @@ __strong static ButterflyHostController* _shared;
     NSMutableDictionary<NSString *, NSString *> *urlParams = [self extractParamsFromURL:url];
 
     [BFBrowser fetchButterflyParamsFromURL:urlParams
+                                    appKey:apiKey
                                 completion:^(NSString * _Nullable butterflyParams) {
         NSString * languageCode = [self extractedLanguageCode];
         NSString* countryToOverride = self.countryCodeToOverride ?: @"n";

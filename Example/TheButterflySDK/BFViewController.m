@@ -8,6 +8,7 @@
 //  openReporterInViewController
 
 #import "BFViewController.h"
+#import "BFAppDelegate.h"
 #import "ButterflySDK.h"
 
 @interface BFViewController ()

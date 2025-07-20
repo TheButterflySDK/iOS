@@ -13,6 +13,7 @@ typedef void (^BFBrowserResult)(id _Nullable result);
           result:(BFBrowserResult _Nullable )result;
 
 + (void)fetchButterflyParamsFromURL:(NSMutableDictionary<NSString *, NSString *> *_Nullable)urlParams
+                             appKey:(NSString * _Nonnull)appKey
                          completion:(void (^_Nonnull)(NSString * _Nullable butterflyParams))completion;
 
 @end

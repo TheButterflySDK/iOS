@@ -357,8 +357,46 @@ __strong static NSMutableSet *_urlWhiteList;
 }
 
 + (void)fetchButterflyParamsFromURL:(NSMutableDictionary<NSString *, NSString *> *_Nullable)urlParams
+                             appKey:(NSString *)appKey
                          completion:(void (^_Nonnull)(NSString * _Nullable butterflyParams))completion {
-    // TODO: needs to create the server call to get the params to lunch the webviw
+
+    NSDictionary *jsonBody = @{
+        @"apiKey": appKey,
+        @"urlParams": urlParams
+    };
+
+    NSError *jsonError;
+    NSData *bodyData = [NSJSONSerialization dataWithJSONObject:jsonBody
+                                                       options:0
+                                                         error:&jsonError];
+    
+    if (jsonError) {
+        NSLog(@"Error serializing JSON: %@", jsonError.localizedDescription);
+        return;
+    }
+    
+    // Create the request
+    NSString *baseURL = @"https://us-central1-butterfly-button.cloudfunctions.net/convertToUrlParams";
+    NSURL *url = [NSURL URLWithString:baseURL];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+    request.HTTPMethod = @"POST";
+    [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
+    [request setHTTPBody:bodyData];
+
+    // Send the request
+    NSURLSessionDataTask *task = [[NSURLSession sharedSession] dataTaskWithRequest:request
+                                                                 completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+        if (error) {
+            NSLog(@"Request error: %@", error.localizedDescription);
+            completion(@"");
+            return;
+        }
+
+        NSString *responseString = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+        completion(responseString ?: @"");
+    }];
+
+    [task resume];
 }
 
 @end
