@@ -117,17 +117,33 @@ __strong static ButterflyHostController* _shared;
 
     [BFBrowser fetchButterflyParamsFromURL:urlParams
                                     appKey:apiKey
-                                completion:^(NSString * _Nullable butterflyParams) {
+                                completion:^(NSDictionary * _Nullable butterflyParams) {
         NSString * languageCode = [self extractedLanguageCode];
         NSString* countryToOverride = self.countryCodeToOverride ?: @"n";
         NSString* customColorHexa = self.customColorHexa ?: @"n";
+        NSString *extraParams = [self extractURLExtraParamsFromDictionary:butterflyParams];
+        
+        NSString* reporterUrl = [NSString stringWithFormat:@"https://butterfly-button.web.app/reporter/?language=%@&api_key=%@&sdk-version=%@&override_country=%@&colorize=%@&is-embedded-via-mobile-sdk=1", languageCode, apiKey, butterflySdkVersion, countryToOverride, customColorHexa];
 
-        NSString* reporterUrl = [NSString stringWithFormat:@"https://butterfly-button.web.app/reporter/?language=%@&api_key=%@&sdk-version=%@&override_country=%@&colorize=%@&is-embedded-via-mobile-sdk=1&extraParams=%@", languageCode, apiKey, butterflySdkVersion, countryToOverride, customColorHexa, butterflyParams];
-
-        [BFBrowser launchUrl:reporterUrl
-                      result:^(id  _Nullable result) {
-            [BFSDKLogger logMessage:@"Web page is loading..."];
-        }];
+        if (extraParams.length > 0) {
+            reporterUrl = [reporterUrl stringByAppendingFormat:@"&%@", extraParams];
+        }
+        
+        if ([NSThread isMainThread]) {
+            // Already on main thread
+            [BFBrowser launchUrl:reporterUrl
+                          result:^(id  _Nullable result) {
+                [BFSDKLogger logMessage:@"Web page is loading..."];
+            }];
+        } else {
+            // Dispatch to main
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [BFBrowser launchUrl:reporterUrl
+                              result:^(id  _Nullable result) {
+                    [BFSDKLogger logMessage:@"Web page is loading..."];
+                }];
+            });
+        }
     }];
 }
 
@@ -212,6 +228,30 @@ __strong static ButterflyHostController* _shared;
         }
     }
     return params;
+}
+
+- (NSString *)extractURLExtraParamsFromDictionary:(NSDictionary * _Nullable)resultParams {
+    NSMutableArray *queryItems = [NSMutableArray array];
+    
+    if (!resultParams || resultParams.count == 0) {
+        return @"";
+    }
+    
+    for (NSString *key in resultParams) {
+        NSString *value = [resultParams objectForKey:key];
+
+        // Percent-encode both key and value
+        NSString *encodedKey = [key stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
+        NSString *encodedValue = [value stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
+
+        NSString *item = [NSString stringWithFormat:@"%@=%@", encodedKey, encodedValue];
+        [queryItems addObject:item];
+    }
+
+    // Join all key=value pairs with &
+    NSString *urlparams = [queryItems componentsJoinedByString:@"&"];
+    
+    return urlparams;
 }
 
 @end

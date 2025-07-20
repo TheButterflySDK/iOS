@@ -42,8 +42,8 @@
 - (BOOL)application:(UIApplication *)app
             openURL:(NSURL *)url
             options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options {
-    [ButterflySDK handleIncomingURL:url
-                             apiKey:@"your-api-key"];
+    
+    [ButterflySDK handleIncomingURL:url apiKey:@"your-api-key"];
     return YES;
 }
 @end

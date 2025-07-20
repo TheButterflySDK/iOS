@@ -358,20 +358,20 @@ __strong static NSMutableSet *_urlWhiteList;
 
 + (void)fetchButterflyParamsFromURL:(NSMutableDictionary<NSString *, NSString *> *_Nullable)urlParams
                              appKey:(NSString *)appKey
-                         completion:(void (^_Nonnull)(NSString * _Nullable butterflyParams))completion {
+                         completion:(void (^_Nonnull)(NSDictionary * _Nullable butterflyParams))completion {
 
     NSDictionary *jsonBody = @{
         @"apiKey": appKey,
         @"urlParams": urlParams
     };
 
-    NSError *jsonError;
+    NSError *jsonBodyError;
     NSData *bodyData = [NSJSONSerialization dataWithJSONObject:jsonBody
                                                        options:0
-                                                         error:&jsonError];
+                                                         error:&jsonBodyError];
     
-    if (jsonError) {
-        NSLog(@"Error serializing JSON: %@", jsonError.localizedDescription);
+    if (jsonBodyError) {
+        NSLog(@"Error serializing JSON: %@", jsonBodyError.localizedDescription);
         return;
     }
     
@@ -386,14 +386,26 @@ __strong static NSMutableSet *_urlWhiteList;
     // Send the request
     NSURLSessionDataTask *task = [[NSURLSession sharedSession] dataTaskWithRequest:request
                                                                  completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+        
         if (error) {
             NSLog(@"Request error: %@", error.localizedDescription);
-            completion(@"");
+            completion(nil);
+            return;
+        }
+        
+        NSError *jsonResponseError = nil;
+        NSDictionary *jsonResponse = [NSJSONSerialization JSONObjectWithData:data
+                                                                     options:0
+                                                                       error:&jsonResponseError];
+
+        if (jsonResponseError) {
+            NSLog(@"JSON Parsing Error: %@", jsonResponseError.localizedDescription);
+            completion(nil);
             return;
         }
 
-        NSString *responseString = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-        completion(responseString ?: @"");
+        NSDictionary *resultParams = [[NSDictionary alloc] initWithDictionary:jsonResponse[@"result"]];
+        completion(resultParams);
     }];
 
     [task resume];
