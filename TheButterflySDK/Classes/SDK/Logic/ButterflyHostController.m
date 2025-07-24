@@ -251,12 +251,15 @@ __strong static ButterflyHostController* _shared;
 }
 
 - (NSMutableDictionary<NSString *, NSString *> *)extractParamsFromURL:(NSURL *)url {
-    if (![[url absoluteString] length]) return [NSMutableDictionary dictionary];
+    NSMutableDictionary<NSString *, NSString *> *params = [NSMutableDictionary dictionary];
+
+    if (![[url absoluteString] length]) {
+        return params;
+    }
 
     NSURLComponents *components = [NSURLComponents componentsWithURL:url resolvingAgainstBaseURL:NO];
     NSArray<NSURLQueryItem *> *items = components.queryItems;
     
-    NSMutableDictionary<NSString *, NSString *> *params = [NSMutableDictionary dictionary];
     for (NSURLQueryItem *item in items) {
         if (item.name && item.value) {
             params[item.name] = item.value;
