@@ -332,11 +332,14 @@ __strong static NSMutableSet *_urlWhiteList;
     }
 }
 
-+ (void)launchUrl:(NSString *)url result:(BFBrowserResult)result {
-    [[[BFBrowser alloc] init] launchUrlInViewController: url result:result];
++ (void)launchUrl:(NSString *)url
+           result:(BFBrowserResult)result {
+    [[[BFBrowser alloc] init] launchUrlInViewController:url
+                                                 result:result];
 }
 
-- (void)launchUrlInViewController:(NSString *) urlString result:(BFBrowserResult) result {
+- (void)launchUrlInViewController:(NSString *)urlString
+                           result:(BFBrowserResult)result {
     NSURL *url = [NSURL URLWithString:urlString];
     BFBrowserViewController *browserViewController = [[BFBrowserViewController alloc] init];
     browserViewController.url = url;
@@ -350,6 +353,41 @@ __strong static NSMutableSet *_urlWhiteList;
         if (result) {
             result(@"OK");
         }
+    }];
+}
+
++ (void)fetchButterflyParamsFromURL:(NSMutableDictionary<NSString *, NSString *> *_Nullable)urlParams
+                             appKey:(NSString * _Nonnull)appKey
+                         sdkVersion:(NSString * _Nonnull)sdkVersion
+                         completion:(void (^_Nonnull)(NSDictionary * _Nullable butterflyParams))completion {
+
+    NSDictionary *jsonBody = @{
+        @"apiKey": appKey,
+        @"sdkVersion": sdkVersion,
+        @"platform": @"ios",
+        @"urlParams": urlParams
+    };
+    
+    // Create the request
+    NSString *baseURL = @"https://us-central1-butterfly-button.cloudfunctions.net/convertToUrlParams";
+    [ButterflyUtils sendRequest:jsonBody
+                          toUrl:baseURL
+              completionHandler:^(NSDictionary *responseDict) {
+        
+        if (!responseDict) {
+            completion(nil);
+            return;
+        }
+        
+        id result = [responseDict objectForKey:@"result"];
+        if (result == nil || ![result isKindOfClass:[NSDictionary class]]) {
+            [BFSDKLogger logMessage: @"Invalid or missing 'result' key in JSON"];
+            completion(nil);
+            return;
+        }
+            
+        NSDictionary *resultParams = [[NSDictionary alloc] initWithDictionary:(NSDictionary *)result];
+        completion(resultParams);
     }];
 }
 
