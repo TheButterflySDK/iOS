@@ -66,22 +66,7 @@ __strong static ButterflyHostController* _shared;
 #pragma mark - Reporter Handling
 
 + (void)openReporterWithKey:(NSString *)key {
-    [[ButterflyHostController shared] openReporterInViewController:[ButterflyHostController topViewController]
-                                                          usingKey:key];
-}
-
-- (void)openReporterInViewController:(UIViewController*)viewController
-                            usingKey:(NSString*)key {
-    NSString * languageCode = [self extractedLanguageCode];
-    NSString* countryToOverride = self.countryCodeToOverride ?: @"n";
-    NSString* customColorHexa = self.customColorHexa ?: @"n";
-
-    NSString* reporterUrl = [NSString stringWithFormat:@"https://butterfly-button.web.app/reporter/?language=%@&api_key=%@&sdk-version=%@&override_country=%@&colorize=%@&is-embedded-via-mobile-sdk=1", languageCode, key, butterflySdkVersion, countryToOverride, customColorHexa];
-
-    [BFBrowser launchUrl:reporterUrl
-                  result:^(id  _Nullable result) {
-        [BFSDKLogger logMessage:@"Web page is loading..."];
-    }];
+    [[ButterflyHostController shared] openReporterUsingKey:key extraParams:nil];
 }
 
 #pragma mark - Reporter Handling via deep link
@@ -89,8 +74,7 @@ __strong static ButterflyHostController* _shared;
 + (void)handleIncomingURL:(NSURL *)url
                    apiKey:(NSString *)apiKey {
     [[ButterflyHostController shared] handleURL:url
-                                         apiKey:apiKey
-                                 viewController:[ButterflyHostController topViewController]];
+                                         apiKey:apiKey];
 }
 
 + (void)handleUserActivity:(NSUserActivity *)userActivity
@@ -98,53 +82,67 @@ __strong static ButterflyHostController* _shared;
     if ([userActivity.activityType isEqualToString:NSUserActivityTypeBrowsingWeb]) {
         NSURL *url = userActivity.webpageURL;
         [[ButterflyHostController shared] handleURL:url
-                                             apiKey:apiKey
-                                     viewController:[ButterflyHostController topViewController]];
+                                             apiKey:apiKey];
     }
 }
 
 + (void)openURLContexts:(UIOpenURLContext *)urlContext
                  apiKey:(NSString *)apiKey {
     [[ButterflyHostController shared] handleURL:urlContext.URL
-                                         apiKey:apiKey
-                                 viewController:[ButterflyHostController topViewController]];
+                                         apiKey:apiKey];
 }
 
 - (void)handleURL:(NSURL *)url
-           apiKey:(NSString *)apiKey
-   viewController:(UIViewController *)viewController {
+           apiKey:(NSString *)apiKey {
     NSMutableDictionary<NSString *, NSString *> *urlParams = [self extractParamsFromURL:url];
 
+    if (!urlParams.count) return;
+    
     [BFBrowser fetchButterflyParamsFromURL:urlParams
                                     appKey:apiKey
+                                sdkVersion:butterflySdkVersion
                                 completion:^(NSDictionary * _Nullable butterflyParams) {
-        NSString * languageCode = [self extractedLanguageCode];
-        NSString* countryToOverride = self.countryCodeToOverride ?: @"n";
-        NSString* customColorHexa = self.customColorHexa ?: @"n";
-        NSString *extraParams = [self extractURLExtraParamsFromDictionary:butterflyParams];
         
-        NSString* reporterUrl = [NSString stringWithFormat:@"https://butterfly-button.web.app/reporter/?language=%@&api_key=%@&sdk-version=%@&override_country=%@&colorize=%@&is-embedded-via-mobile-sdk=1", languageCode, apiKey, butterflySdkVersion, countryToOverride, customColorHexa];
-
-        if (extraParams.length > 0) {
-            reporterUrl = [reporterUrl stringByAppendingFormat:@"&%@", extraParams];
+        NSString* extraParams = [self extractURLExtraParamsFromDictionary:butterflyParams];
+        
+        if (!extraParams.length) {
+            [BFSDKLogger logMessage: @"No need to handle deep link params. Aborting URL handling..."];
+            return;
         }
         
-        if ([NSThread isMainThread]) {
-            // Already on main thread
+        [self openReporterUsingKey:apiKey
+                       extraParams:extraParams];
+    }];
+}
+
+#pragma mark - Shared logic
+
+- (void)openReporterUsingKey:(NSString *)key extraParams:(NSString * _Nullable)extraParams {
+    NSString * languageCode = [self extractedLanguageCode];
+    NSString* countryToOverride = self.countryCodeToOverride ?: @"n";
+    NSString* customColorHexa = self.customColorHexa ?: @"n";
+
+    NSString* reporterUrl = [NSString stringWithFormat:@"https://butterfly-button.web.app/reporter/?language=%@&api_key=%@&sdk-version=%@&override_country=%@&colorize=%@&is-embedded-via-mobile-sdk=1", languageCode, key, butterflySdkVersion, countryToOverride, customColorHexa];
+
+    if (extraParams.length > 0) {
+        reporterUrl = [reporterUrl stringByAppendingFormat:@"&%@", extraParams];
+    }
+
+    if ([NSThread isMainThread]) {
+        // Already on main thread
+        [BFBrowser launchUrl:reporterUrl
+                      result:^(id  _Nullable result) {
+            [BFSDKLogger logMessage:@"Web page is loading..."];
+        }];
+    } else {
+        // Dispatch to main
+        dispatch_async(dispatch_get_main_queue(), ^{
             [BFBrowser launchUrl:reporterUrl
                           result:^(id  _Nullable result) {
                 [BFSDKLogger logMessage:@"Web page is loading..."];
             }];
-        } else {
-            // Dispatch to main
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [BFBrowser launchUrl:reporterUrl
-                              result:^(id  _Nullable result) {
-                    [BFSDKLogger logMessage:@"Web page is loading..."];
-                }];
-            });
-        }
-    }];
+        });
+    }
 }
 
 #pragma mark - Helpers
@@ -218,6 +216,8 @@ __strong static ButterflyHostController* _shared;
 }
 
 - (NSMutableDictionary<NSString *, NSString *> *)extractParamsFromURL:(NSURL *)url {
+    if (![[url absoluteString] length]) return [NSMutableDictionary dictionary];
+
     NSURLComponents *components = [NSURLComponents componentsWithURL:url resolvingAgainstBaseURL:NO];
     NSArray<NSURLQueryItem *> *items = components.queryItems;
     
@@ -249,9 +249,9 @@ __strong static ButterflyHostController* _shared;
     }
 
     // Join all key=value pairs with &
-    NSString *urlparams = [queryItems componentsJoinedByString:@"&"];
+    NSString *urlParams = [queryItems componentsJoinedByString:@"&"];
     
-    return urlparams;
+    return urlParams;
 }
 
 @end

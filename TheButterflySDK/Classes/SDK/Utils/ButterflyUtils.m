@@ -55,7 +55,10 @@ __strong static ButterflyUtils *_shared;
     return self;
 }
 
-+ (void) sendRequest:(NSDictionary *)jsonDictionary toUrl:(NSString *) urlString withHeaders:(NSDictionary *) headers completionCallback:(void (^)(NSString * _Nullable responseString)) completionCallback {
++ (void)sendRequest:(NSDictionary *)jsonDictionary
+              toUrl:(NSString *)urlString
+        withHeaders:(NSDictionary *)headers
+ completionCallback:(void (^)(NSString * _Nullable responseString))completionCallback {
     NSMutableURLRequest *request = [ButterflyUtils prepareRequestWithBody: jsonDictionary forEndpoint: urlString];
     if (!completionCallback) {
         return;
@@ -82,7 +85,7 @@ __strong static ButterflyUtils *_shared;
 /**
  Using conditional compilation flags: https://miqu.me/blog/2016/07/31/xcode-8-new-build-settings-and-analyzer-improvements/
  */
-+(BOOL)isRunningReleaseVersion {
++ (BOOL)isRunningReleaseVersion {
 #ifdef DEBUG
     return NO;
 #else
@@ -90,7 +93,7 @@ __strong static ButterflyUtils *_shared;
 #endif
 }
 
-+(BOOL)isRunningOnSimulator {
++ (BOOL)isRunningOnSimulator {
 #if TARGET_IPHONE_SIMULATOR
     return YES;
 #else
@@ -98,7 +101,7 @@ __strong static ButterflyUtils *_shared;
 #endif
 }
 
--(void) onAppLoaded {
+- (void)onAppLoaded {
     // Wait for app to finish launch and then...
     appFinishedLaunchObserver = [[NSNotificationCenter defaultCenter] addObserverForName: UIApplicationDidFinishLaunchingNotification object: nil queue: nil usingBlock:^(NSNotification * _Nonnull note) {
 
@@ -107,17 +110,17 @@ __strong static ButterflyUtils *_shared;
     }];
 }
 
--(NSString *) sdkLibraryPath {
+- (NSString *)sdkLibraryPath {
     if (libraryPath != nil) {
         return libraryPath;
     }
 
-    NSString *path = [[NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) lastObject] stringByAppendingPathComponent: @"Butterfly"];
+    NSString *path = [[NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) lastObject] stringByAppendingPathComponent:@"Butterfly"];
 
     BOOL isDir = YES;
     NSFileManager *fileManager= [NSFileManager defaultManager];
-    if(![fileManager fileExistsAtPath: path isDirectory: &isDir])
-        if(![fileManager createDirectoryAtPath: path withIntermediateDirectories:YES attributes:nil error:NULL])
+    if(![fileManager fileExistsAtPath:path isDirectory:&isDir])
+        if(![fileManager createDirectoryAtPath:path withIntermediateDirectories:YES attributes:nil error:NULL])
             NSLog(@"Error: Create folder failed %@", path);
 
 
@@ -126,29 +129,34 @@ __strong static ButterflyUtils *_shared;
     return libraryPath;
 }
 
-+(NSString *) toJsonString:(NSDictionary *) jsonDictionary {
++ (NSString *)toJsonString:(NSDictionary *)jsonDictionary {
     NSError *error;
-    NSData *jsonData = [NSJSONSerialization dataWithJSONObject: jsonDictionary options: NSJSONWritingPrettyPrinted error: &error];
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:jsonDictionary
+                                                       options:NSJSONWritingPrettyPrinted
+                                                         error:&error];
 
-    NSString* jsonString = [[NSString alloc] initWithData: jsonData encoding: NSUTF8StringEncoding];
+    NSString* jsonString = [[NSString alloc] initWithData:jsonData
+                                                 encoding:NSUTF8StringEncoding];
     [BFSDKLogger logMessage:@"jsonString: %@", jsonString];
     
     return error ? nil : jsonString;
 }
 
-+(NSData *) toJsonData:(NSDictionary *) jsonDictionary {
++ (NSData *)toJsonData:(NSDictionary *)jsonDictionary {
     NSError *error;
-    NSData *jsonData = [NSJSONSerialization dataWithJSONObject: jsonDictionary options: NSJSONWritingPrettyPrinted error: &error];
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:jsonDictionary
+                                                       options:NSJSONWritingPrettyPrinted
+                                                         error:&error];
 
     return jsonData;
 }
 
-+(NSDictionary *) toJsonDictionary:(NSString *) jsonString {
++ (NSDictionary *)toJsonDictionary:(NSString *)jsonString {
     NSError *jsonError;
     NSData *objectData = [jsonString dataUsingEncoding:NSUTF8StringEncoding];
-    NSDictionary *jsonDictionary = [NSJSONSerialization JSONObjectWithData: objectData
-                                          options: NSJSONReadingMutableContainers
-                                            error: &jsonError];
+    NSDictionary *jsonDictionary = [NSJSONSerialization JSONObjectWithData:objectData
+                                                                   options:NSJSONReadingMutableContainers
+                                                                     error:&jsonError];
 
     return jsonDictionary;
 }
@@ -161,7 +169,8 @@ __strong static ButterflyUtils *_shared;
 //    NSLog(@"App loaded");
 }
 
-+ (NSMutableURLRequest *) prepareRequestWithBody:(NSDictionary *) bodyDictionary forEndpoint: (NSString *) apiEndpoint {
++ (NSMutableURLRequest *)prepareRequestWithBody:(NSDictionary *)bodyDictionary
+                                    forEndpoint:(NSString *) apiEndpoint {
     NSData *postBody = [ButterflyUtils toJsonData: bodyDictionary];
     if (![postBody length]) {
         return nil;
@@ -174,11 +183,13 @@ __strong static ButterflyUtils *_shared;
     return request;
 }
 
-+ (NSMutableURLRequest *) prepareRequestWithEndpoint:(NSString *) apiEndpoint {
-    return [self prepareRequestWithEndpoint: apiEndpoint contentType: @"application/json; charset=utf-8"];
++ (NSMutableURLRequest *)prepareRequestWithEndpoint:(NSString *)apiEndpoint {
+    return [self prepareRequestWithEndpoint:apiEndpoint
+                                contentType:@"application/json; charset=utf-8"];
 }
 
-+ (NSMutableURLRequest *) prepareRequestWithEndpoint:(NSString *) serverUrlString contentType:(NSString *) contentType {
++ (NSMutableURLRequest *)prepareRequestWithEndpoint:(NSString *)serverUrlString
+                                        contentType:(NSString *)contentType {
     if ([(serverUrlString ?: @"") length] == 0) return  nil;
 
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL: [NSURL URLWithString: serverUrlString]];
@@ -193,11 +204,23 @@ __strong static ButterflyUtils *_shared;
     return request;
 }
 
-+(void) pinToSuperView: (UIView *) subview attribute1:(NSLayoutAttribute) attribute1 attribute2:(NSLayoutAttribute) attribute2 {
-    [ButterflyUtils pinToSuperView:subview attribute1:attribute1 constant1: 0.f attribute2:attribute2 constant2: 0.f];
++ (void)pinToSuperView:(UIView *)subview
+            attribute1:(NSLayoutAttribute)attribute1
+            attribute2:(NSLayoutAttribute)attribute2 {
+    
+    [ButterflyUtils pinToSuperView:subview
+                        attribute1:attribute1
+                         constant1:0.f
+                        attribute2:attribute2
+                         constant2:0.f];
 }
 
-+(void) pinToSuperView: (UIView *) subview attribute1:(NSLayoutAttribute) attribute1 constant1:(CGFloat)constant1 attribute2:(NSLayoutAttribute) attribute2 constant2:(CGFloat) constant2 {
++ (void)pinToSuperView:(UIView *)subview
+            attribute1:(NSLayoutAttribute)attribute1
+             constant1:(CGFloat)constant1
+            attribute2:(NSLayoutAttribute)attribute2
+             constant2:(CGFloat) constant2 {
+    
     UIView *superview = [subview superview];
     if (superview == nil) return;
 
@@ -222,7 +245,7 @@ __strong static ButterflyUtils *_shared;
     })];
 }
 
-+(void) pinToSuperViewCenter: (UIView *) subview {
++ (void)pinToSuperViewCenter:(UIView *) subview {
     UIView *superview = [subview superview];
     if (superview == nil) return;
 
@@ -247,7 +270,7 @@ __strong static ButterflyUtils *_shared;
     })];
 }
 
-+(void) stretchToSuperView: (UIView *) subview {
++ (void)stretchToSuperView:(UIView *)subview {
     UIView *superview = [subview superview];
     if (superview == nil) return;
 
@@ -289,6 +312,57 @@ __strong static ButterflyUtils *_shared;
     [superview addConstraint:height];
     [superview addConstraint:top];
     [superview addConstraint:leading];
+}
+
+#pragma mark - Throttling
+
++ (void)repeatUntil:(NSTimeInterval)delay
+        maxAttempts:(NSInteger)maxAttempts
+      exitCondition:(BOOL (^)(void))condition
+         completion:(void (^)(BOOL success))completion {
+    
+    [self repeatUntil:delay
+          maxAttempts:maxAttempts
+        attemptsCount:0
+        exitCondition:condition
+           completion:completion];
+}
+
++ (void)repeatUntil:(NSTimeInterval)delay
+        maxAttempts:(NSInteger)maxAttempts
+      attemptsCount:(NSInteger)attemptsCount
+      exitCondition:(BOOL (^)(void))condition
+         completion:(void (^)(BOOL success))completion {
+    
+    if (!condition || !completion) return;
+
+    if (attemptsCount >= maxAttempts) {
+        completion(NO);
+        return;
+    }
+
+    if (condition()) {
+        completion(YES);
+        return;
+    }
+
+    [ButterflyUtils executeBlockAfterDelay:delay block:^{
+        [self repeatUntil:delay
+              maxAttempts:maxAttempts
+            attemptsCount:attemptsCount + 1
+            exitCondition:condition
+               completion:completion];
+    }];
+}
+
++ (void)executeBlockAfterDelay:(NSTimeInterval)delay
+                         block:(void (^)(void))block {
+    
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        if (block) {
+            block();
+        }
+    });
 }
 
 @end

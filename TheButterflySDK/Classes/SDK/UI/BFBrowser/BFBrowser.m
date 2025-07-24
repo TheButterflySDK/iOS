@@ -357,11 +357,14 @@ __strong static NSMutableSet *_urlWhiteList;
 }
 
 + (void)fetchButterflyParamsFromURL:(NSMutableDictionary<NSString *, NSString *> *_Nullable)urlParams
-                             appKey:(NSString *)appKey
+                             appKey:(NSString * _Nonnull)appKey
+                         sdkVersion:(NSString * _Nonnull)sdkVersion
                          completion:(void (^_Nonnull)(NSDictionary * _Nullable butterflyParams))completion {
 
     NSDictionary *jsonBody = @{
         @"apiKey": appKey,
+        @"sdkVersion": sdkVersion,
+        @"platform": @"ios",
         @"urlParams": urlParams
     };
 
@@ -371,7 +374,7 @@ __strong static NSMutableSet *_urlWhiteList;
                                                          error:&jsonBodyError];
     
     if (jsonBodyError) {
-        NSLog(@"Error serializing JSON: %@", jsonBodyError.localizedDescription);
+        [BFSDKLogger logMessage: @"Error serializing JSON: %@", jsonBodyError.localizedDescription];
         return;
     }
     
@@ -388,7 +391,7 @@ __strong static NSMutableSet *_urlWhiteList;
                                                                  completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
         
         if (error) {
-            NSLog(@"Request error: %@", error.localizedDescription);
+            [BFSDKLogger logMessage: @"Request error: %@", error.localizedDescription];
             completion(nil);
             return;
         }
@@ -399,12 +402,19 @@ __strong static NSMutableSet *_urlWhiteList;
                                                                        error:&jsonResponseError];
 
         if (jsonResponseError) {
-            NSLog(@"JSON Parsing Error: %@", jsonResponseError.localizedDescription);
+            [BFSDKLogger logMessage: @"JSON Parsing Error: %@", jsonResponseError.localizedDescription];
             completion(nil);
             return;
         }
 
-        NSDictionary *resultParams = [[NSDictionary alloc] initWithDictionary:jsonResponse[@"result"]];
+        id result = [jsonResponse objectForKey:@"result"];
+        if (result == nil || ![result isKindOfClass:[NSDictionary class]]) {
+            [BFSDKLogger logMessage: @"Invalid or missing 'result' key in JSON"];
+            completion(nil);
+            return;
+        }
+            
+        NSDictionary *resultParams = [[NSDictionary alloc] initWithDictionary:(NSDictionary *)result];
         completion(resultParams);
     }];
 

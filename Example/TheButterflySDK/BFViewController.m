@@ -5,7 +5,6 @@
 //  Created by Perry on 02/28/2022.
 //  Copyright (c) 2022 Perry. All rights reserved.
 //
-//  openReporterInViewController
 
 #import "BFViewController.h"
 #import "BFAppDelegate.h"
