@@ -367,47 +367,19 @@ __strong static NSMutableSet *_urlWhiteList;
         @"platform": @"ios",
         @"urlParams": urlParams
     };
-
-    NSError *jsonBodyError;
-    NSData *bodyData = [NSJSONSerialization dataWithJSONObject:jsonBody
-                                                       options:0
-                                                         error:&jsonBodyError];
-    
-    if (jsonBodyError) {
-        [BFSDKLogger logMessage: @"Error serializing JSON: %@", jsonBodyError.localizedDescription];
-        return;
-    }
     
     // Create the request
     NSString *baseURL = @"https://us-central1-butterfly-button.cloudfunctions.net/convertToUrlParams";
-    NSURL *url = [NSURL URLWithString:baseURL];
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
-    request.HTTPMethod = @"POST";
-    [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
-    [request setHTTPBody:bodyData];
-
-    // Send the request
-    NSURLSessionDataTask *task = [[NSURLSession sharedSession] dataTaskWithRequest:request
-                                                                 completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+    [ButterflyUtils sendRequest:jsonBody
+                          toUrl:baseURL
+              completionHandler:^(NSDictionary *responseDict) {
         
-        if (error) {
-            [BFSDKLogger logMessage: @"Request error: %@", error.localizedDescription];
+        if (!responseDict) {
             completion(nil);
             return;
         }
         
-        NSError *jsonResponseError = nil;
-        NSDictionary *jsonResponse = [NSJSONSerialization JSONObjectWithData:data
-                                                                     options:0
-                                                                       error:&jsonResponseError];
-
-        if (jsonResponseError) {
-            [BFSDKLogger logMessage: @"JSON Parsing Error: %@", jsonResponseError.localizedDescription];
-            completion(nil);
-            return;
-        }
-
-        id result = [jsonResponse objectForKey:@"result"];
+        id result = [responseDict objectForKey:@"result"];
         if (result == nil || ![result isKindOfClass:[NSDictionary class]]) {
             [BFSDKLogger logMessage: @"Invalid or missing 'result' key in JSON"];
             completion(nil);
@@ -417,8 +389,6 @@ __strong static NSMutableSet *_urlWhiteList;
         NSDictionary *resultParams = [[NSDictionary alloc] initWithDictionary:(NSDictionary *)result];
         completion(resultParams);
     }];
-
-    [task resume];
 }
 
 @end

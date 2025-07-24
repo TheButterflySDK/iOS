@@ -59,7 +59,9 @@ __strong static ButterflyUtils *_shared;
               toUrl:(NSString *)urlString
         withHeaders:(NSDictionary *)headers
  completionCallback:(void (^)(NSString * _Nullable responseString))completionCallback {
-    NSMutableURLRequest *request = [ButterflyUtils prepareRequestWithBody: jsonDictionary forEndpoint: urlString];
+    
+    NSMutableURLRequest *request = [ButterflyUtils prepareRequestWithBody:jsonDictionary
+                                                              forEndpoint:urlString];
     if (!completionCallback) {
         return;
     }
@@ -73,10 +75,57 @@ __strong static ButterflyUtils *_shared;
         [request setValue: headers[key] forHTTPHeaderField: [key description]];
     }
 
-    NSURLSessionDataTask *task = [[NSURLSession sharedSession] dataTaskWithRequest: request completionHandler:^(NSData * _Nullable returnedData, NSURLResponse * _Nullable response, NSError * _Nullable error) {
-        NSString *returnString = [[NSString alloc] initWithData: returnedData encoding: NSUTF8StringEncoding];
+    NSURLSessionDataTask *task = [[NSURLSession sharedSession] dataTaskWithRequest:request
+                                                                 completionHandler:^(NSData * _Nullable returnedData, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+        NSString *returnString = [[NSString alloc] initWithData:returnedData
+                                                       encoding:NSUTF8StringEncoding];
 
         completionCallback(returnString);
+    }];
+
+    [task resume];
+}
+
++ (void)sendRequest:(NSDictionary *)jsonDictionary
+              toUrl:(NSString *)urlString
+  completionHandler:(void (^)(NSDictionary * responseDict))completionHandler {
+
+    NSMutableURLRequest *request = [self prepareRequestWithBody:jsonDictionary
+                                                    forEndpoint:urlString];
+    
+    if (!request) {
+        [BFSDKLogger logMessage:@"❌ Failed to prepare request for URL: %@", urlString];
+        completionHandler(nil);
+        return;
+    }
+
+    NSURLSessionDataTask *task = [[NSURLSession sharedSession] dataTaskWithRequest:request
+                                                                 completionHandler:^(NSData * _Nullable data,
+                                                                                     NSURLResponse * _Nullable response,
+                                                                                     NSError * _Nullable error) {
+        if (error) {
+            [BFSDKLogger logMessage:@"❌ Request error: %@", error.localizedDescription];
+            completionHandler(nil);
+            return;
+        }
+
+        if (!data) {
+            [BFSDKLogger logMessage:@"❌ Empty response data"];
+            completionHandler(nil);
+            return;
+        }
+
+        NSError *jsonError = nil;
+        NSDictionary *responseDict = [NSJSONSerialization JSONObjectWithData:data
+                                                                     options:0
+                                                                       error:&jsonError];
+        if (jsonError) {
+            [BFSDKLogger logMessage:@"❌ JSON parsing error: %@", jsonError.localizedDescription];
+            completionHandler(nil);
+            return;
+        }
+
+        completionHandler(responseDict);
     }];
 
     [task resume];
@@ -363,6 +412,18 @@ __strong static ButterflyUtils *_shared;
             block();
         }
     });
+}
+
+#pragma mark - Main Thread Execution
+
++ (void)runOnMainThread:(dispatch_block_t)block {
+    if (!block) return;
+
+    if ([NSThread isMainThread]) {
+        block();
+    } else {
+        dispatch_async(dispatch_get_main_queue(), block);
+    }
 }
 
 @end

@@ -11,6 +11,7 @@
 #import "BFUserInputHelper.h"
 #import "BFToastMessage.h"
 #import "BFBrowser.h"
+#import "ButterflyUtils.h"
 
 @interface ButterflyHostController()
 
@@ -94,8 +95,8 @@ __strong static ButterflyHostController* _shared;
 
 - (void)handleURL:(NSURL *)url
            apiKey:(NSString *)apiKey {
+    
     NSMutableDictionary<NSString *, NSString *> *urlParams = [self extractParamsFromURL:url];
-
     if (!urlParams.count) return;
     
     [BFBrowser fetchButterflyParamsFromURL:urlParams
@@ -109,40 +110,65 @@ __strong static ButterflyHostController* _shared;
             [BFSDKLogger logMessage: @"No need to handle deep link params. Aborting URL handling..."];
             return;
         }
-        
-        [self openReporterUsingKey:apiKey
-                       extraParams:extraParams];
+
+        // Wait until topViewController is stable before proceeding
+        [ButterflyUtils runOnMainThread:^{
+            NSMutableArray<UIViewController *> *topViewControllerHistory = @[[ButterflyHostController topViewController]].mutableCopy;
+
+            [ButterflyUtils repeatUntil:0.5
+                            maxAttempts:6
+                          exitCondition:^BOOL {
+
+                UIViewController *currentTop = [ButterflyHostController topViewController];
+                
+                if (!currentTop) {
+                    return NO;
+                }
+                
+                if ([topViewControllerHistory.lastObject isEqual:currentTop]) {
+                    return YES;
+                }
+                
+                [topViewControllerHistory addObject:currentTop];
+                
+                return NO;
+                
+            } completion:^(BOOL success) {
+                [topViewControllerHistory removeAllObjects];
+
+                if (success) {
+                    [BFSDKLogger logMessage:@"✅ TopViewController ready. Proceeding with URL param handling."];
+                    [self openReporterUsingKey:apiKey
+                                   extraParams:extraParams];
+                } else {
+                    [BFSDKLogger logMessage:@"❌ Timed out waiting for TopViewController. Aborting URL param handling."];
+                }
+            }];
+        }];
     }];
 }
 
 #pragma mark - Shared logic
 
-- (void)openReporterUsingKey:(NSString *)key extraParams:(NSString * _Nullable)extraParams {
+- (void)openReporterUsingKey:(NSString *)key
+                 extraParams:(NSString * _Nullable)extraParams {
+    
     NSString * languageCode = [self extractedLanguageCode];
     NSString* countryToOverride = self.countryCodeToOverride ?: @"n";
     NSString* customColorHexa = self.customColorHexa ?: @"n";
 
     NSString* reporterUrl = [NSString stringWithFormat:@"https://butterfly-button.web.app/reporter/?language=%@&api_key=%@&sdk-version=%@&override_country=%@&colorize=%@&is-embedded-via-mobile-sdk=1", languageCode, key, butterflySdkVersion, countryToOverride, customColorHexa];
 
-    if (extraParams.length > 0) {
+    if (extraParams.length) {
         reporterUrl = [reporterUrl stringByAppendingFormat:@"&%@", extraParams];
     }
 
-    if ([NSThread isMainThread]) {
-        // Already on main thread
+    [ButterflyUtils runOnMainThread:^{
         [BFBrowser launchUrl:reporterUrl
                       result:^(id  _Nullable result) {
             [BFSDKLogger logMessage:@"Web page is loading..."];
         }];
-    } else {
-        // Dispatch to main
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [BFBrowser launchUrl:reporterUrl
-                          result:^(id  _Nullable result) {
-                [BFSDKLogger logMessage:@"Web page is loading..."];
-            }];
-        });
-    }
+    }];
 }
 
 #pragma mark - Helpers
