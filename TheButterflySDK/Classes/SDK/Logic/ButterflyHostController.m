@@ -97,53 +97,30 @@ __strong static ButterflyHostController* _shared;
            apiKey:(NSString *)apiKey {
     
     NSMutableDictionary<NSString *, NSString *> *urlParams = [self extractParamsFromURL:url];
-    if (!urlParams.count) return;
     
-    [BFBrowser fetchButterflyParamsFromURL:urlParams
-                                    appKey:apiKey
-                                sdkVersion:butterflySdkVersion
-                                completion:^(NSDictionary * _Nullable butterflyParams) {
-        
-        NSString* extraParams = [self extractURLExtraParamsFromDictionary:butterflyParams];
-        
-        if (!extraParams.length) {
-            [BFSDKLogger logMessage: @"No need to handle deep link params. Aborting URL handling..."];
+    if (!urlParams.count) {
+        return;
+    }
+    
+    [ButterflyHostController whenTopViewControllerIsReady:^(BOOL success) {
+        if (!success) {
             return;
         }
-
-        // Wait until topViewController is stable before proceeding
-        [ButterflyUtils runOnMainThread:^{
-            NSMutableArray<UIViewController *> *topViewControllerHistory = @[[ButterflyHostController topViewController]].mutableCopy;
-
-            [ButterflyUtils repeatUntil:0.5
-                            maxAttempts:6
-                          exitCondition:^BOOL {
-
-                UIViewController *currentTop = [ButterflyHostController topViewController];
-                
-                if (!currentTop) {
-                    return NO;
-                }
-                
-                if ([topViewControllerHistory.lastObject isEqual:currentTop]) {
-                    return YES;
-                }
-                
-                [topViewControllerHistory addObject:currentTop];
-                
-                return NO;
-                
-            } completion:^(BOOL success) {
-                [topViewControllerHistory removeAllObjects];
-
-                if (success) {
-                    [BFSDKLogger logMessage:@"✅ TopViewController ready. Proceeding with URL param handling."];
-                    [self openReporterUsingKey:apiKey
-                                   extraParams:extraParams];
-                } else {
-                    [BFSDKLogger logMessage:@"❌ Timed out waiting for TopViewController. Aborting URL param handling."];
-                }
-            }];
+        
+        [BFBrowser fetchButterflyParamsFromURL:urlParams
+                                        appKey:apiKey
+                                    sdkVersion:butterflySdkVersion
+                                    completion:^(NSDictionary * _Nullable butterflyParams) {
+            
+            NSString* extraParams = [self extractURLExtraParamsFromDictionary:butterflyParams];
+            
+            if (!extraParams.length) {
+                [BFSDKLogger logMessage: @"No need to handle deep link params. Aborting URL handling..."];
+                return;
+            }
+        
+            [self openReporterUsingKey:apiKey
+                           extraParams:extraParams];
         }];
     }];
 }
@@ -172,6 +149,38 @@ __strong static ButterflyHostController* _shared;
 }
 
 #pragma mark - Helpers
+
++ (void)whenTopViewControllerIsReady:(void (^)(BOOL success))completion {
+    [ButterflyUtils runOnMainThread:^{
+        NSMutableArray<UIViewController *> *topViewControllerHistory = @[[ButterflyHostController topViewController]].mutableCopy;
+
+        [ButterflyUtils repeatUntil:0.5
+                        maxAttempts:6
+                      exitCondition:^BOOL {
+            UIViewController *currentTop = [ButterflyHostController topViewController];
+
+            if (!currentTop) {
+                return NO;
+            }
+            
+            if ([topViewControllerHistory.lastObject isEqual:currentTop]) {
+                return YES;
+            }
+
+            [topViewControllerHistory addObject:currentTop];
+            
+            return NO;
+        } completion:^(BOOL success) {
+            if (success) {
+                [BFSDKLogger logMessage:@"✅ TopViewController ready. Proceeding with URL param handling."];
+            } else {
+                [BFSDKLogger logMessage:@"❌ Timed out waiting for TopViewController. Aborting URL param handling."];
+            }
+            
+            completion(success);
+        }];
+    }];
+}
 
 + (UIViewController *)topViewController {
     return [self topViewControllerFromViewController:
