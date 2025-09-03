@@ -49,34 +49,27 @@ __strong static ButterflySDK* _shared;
 
 #pragma mark - Reporter Handling
 
++ (void)openWithKey:(NSString *)key {
+    [ButterflyHostController openReporterWithKey:key];
+}
+
 + (void)openReporterWithKey:(NSString *)key {
-    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-        [ButterflyHostController openReporterWithKey:key];
-    }];
+    [self openWithKey: key];
 }
 
 + (void)handleIncomingURL:(NSURL *)url
                    apiKey:(NSString *)apiKey {
-    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-        [ButterflyHostController handleIncomingURL:url
-                                            apiKey:apiKey];
-    }];
+    [ButterflyHostController handleIncomingURL:url apiKey:apiKey];
 }
 
 + (void)handleUserActivity:(NSUserActivity *)userActivity
                     apiKey:(NSString *)apiKey {
-    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-        [ButterflyHostController handleUserActivity:userActivity
-                                             apiKey:apiKey];
-    }];
+    [ButterflyHostController handleUserActivity:userActivity apiKey:apiKey];
 }
 
 + (void)openURLContexts:(UIOpenURLContext *)urlContext
                  apiKey:(NSString *)apiKey {
-    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-        [ButterflyHostController openURLContexts:urlContext
-                                          apiKey:apiKey];
-    }];
+    [ButterflyHostController openURLContexts:urlContext apiKey:apiKey];
 }
 
 @end

@@ -33,6 +33,9 @@
 
 #pragma mark - Reporter Handling
 
++ (void)openWithKey:(NSString *)key;
+
+/// Deprecated:use `openWithKey` instead
 + (void)openReporterWithKey:(NSString*)key;
 
 + (void)handleIncomingURL:(NSURL *)url
