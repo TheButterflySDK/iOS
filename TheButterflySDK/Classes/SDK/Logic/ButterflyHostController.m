@@ -97,28 +97,21 @@ __strong static ButterflyHostController* _shared;
            apiKey:(NSString *)apiKey {
     NSMutableDictionary<NSString *, NSString *> *urlParams = [self extractParamsFromURL:url];
     
-    if (!urlParams.count) {
-        return;
-    }
+    if (![urlParams count]) return;
     
     [BFBrowser fetchButterflyParamsFromURL:urlParams
                                     appKey:apiKey
                                 sdkVersion:butterflySdkVersion
                                 completion:^(NSDictionary * _Nullable butterflyParams) {
         [ButterflyHostController whenTopViewControllerIsReady:^(BOOL success) {
-            if (!success) {
-                return;
-            }
+            if (!success) return;
             
-            NSString* extraParams = [self extractURLExtraParamsFromDictionary:butterflyParams];
-            
-            if (!extraParams.length) {
+            if ([butterflyParams count]) {
+                [self openReporterUsingKey:apiKey
+                               extraParams:butterflyParams];
+            } else {
                 [BFSDKLogger logMessage: @"No need to handle deep link params. Aborting URL handling..."];
-                return;
             }
-            
-            [self openReporterUsingKey:apiKey
-                           extraParams:extraParams];
         }];
     }];
 }
@@ -126,22 +119,37 @@ __strong static ButterflyHostController* _shared;
 #pragma mark - Shared logic
 
 - (void)openReporterUsingKey:(NSString *)key
-                 extraParams:(NSString * _Nullable)extraParams {
+                 extraParams:(NSDictionary * _Nullable) extraParams {
     
-    NSString * languageCode = [self extractedLanguageCode];
+    NSString* languageCode = [self extractedLanguageCode];
     NSString* countryToOverride = self.countryCodeToOverride ?: @"n";
     NSString* customColorHexa = self.customColorHexa ?: @"n";
-    NSString *bundleId = [NSBundle mainBundle].bundleIdentifier;
+    NSString* bundleId = [NSBundle mainBundle].bundleIdentifier;
+    NSMutableDictionary *allParams = [NSMutableDictionary new];
+    NSString* reporterUrl = @"https://butterfly-button.web.app/reporter/";
 
-    NSString* reporterUrl = [NSString stringWithFormat:@"https://butterfly-button.web.app/reporter/?language=%@&api_key=%@&sdk-version=%@&override_country=%@&colorize=%@&is-embedded-via-mobile-sdk=1&mobile-app-id=%@", languageCode, key, butterflySdkVersion, countryToOverride, customColorHexa, bundleId];
-
-    if ([extraParams length]) {
-        reporterUrl = [reporterUrl stringByAppendingFormat:@"&%@", extraParams];
+    [allParams setObject: languageCode forKey: @"language"];
+    [allParams setObject: key forKey: @"api_key"];
+    [allParams setObject: butterflySdkVersion forKey: @"sdk-version"];
+    [allParams setObject: countryToOverride forKey: @"override_country"];
+    [allParams setObject: customColorHexa forKey: @"colorize"];
+    [allParams setObject: @"1" forKey: @"is-embedded-via-mobile-sdk"];
+    [allParams setObject: bundleId forKey: @"mobile-app-id"];
+    
+    if ([extraParams count]) {
+        // Add / Override vales
+        [allParams addEntriesFromDictionary: extraParams];
     }
 
-    [ButterflyUtils runOnMainThread:^{
+    NSString* wholeQueryString = [self extractURLExtraParamsFromDictionary: allParams];
+    
+    if (![wholeQueryString length]) return;;
+    
+    reporterUrl = [reporterUrl stringByAppendingFormat:@"?%@", wholeQueryString];
+
+    [ButterflyUtils runOnMainThread: ^{
         [BFBrowser launchUrl:reporterUrl
-                      result:^(id  _Nullable result) {
+                      result:^(id _Nullable result) {
             [BFSDKLogger logMessage:@"Web page is loading..."];
         }];
     }];
@@ -246,6 +254,7 @@ __strong static ButterflyHostController* _shared;
                                                     table:nil] lowercaseString] ?: @"EN";
         }
     }
+
     return languageCode;
 }
 

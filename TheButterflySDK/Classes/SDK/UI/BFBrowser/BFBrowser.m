@@ -38,7 +38,18 @@
 
 @implementation BFBrowserViewController
 
+__strong static NSMutableDictionary *_cachedDeepLinkResponses;
 __strong static NSMutableSet *_urlWhiteList;
+__strong static NSMutableSet *_pendingLinkRequests;
+
++(NSMutableDictionary *) cachedDeepLinkResponses {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        _cachedDeepLinkResponses = [NSMutableDictionary dictionary];
+    });
+
+    return _cachedDeepLinkResponses;
+}
 
 +(NSMutableSet *) urlWhiteList {
     static dispatch_once_t onceToken;
@@ -47,6 +58,15 @@ __strong static NSMutableSet *_urlWhiteList;
     });
 
     return _urlWhiteList;
+}
+
++(NSMutableSet *) pendingLinkRequests {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        _pendingLinkRequests = [NSMutableSet set];
+    });
+
+    return _pendingLinkRequests;
 }
 
 - (void)viewDidLoad {
@@ -360,6 +380,53 @@ __strong static NSMutableSet *_urlWhiteList;
                              appKey:(NSString * _Nonnull)appKey
                          sdkVersion:(NSString * _Nonnull)sdkVersion
                          completion:(void (^_Nonnull)(NSDictionary * _Nullable butterflyParams))completion {
+    if (!completion) return;
+    if (![urlParams count]) {
+        completion(nil);
+        return;
+    }
+
+    // val cachedKeysKey = urlParams.entries.toList().sortedBy { it.key }.joinToString(",")
+
+    NSMutableArray *entries = [NSMutableArray array];
+    for (NSString *key in [urlParams allKeys]) {
+        NSString *value = [urlParams objectForKey: key];
+        if (value == nil || ![value isKindOfClass:[NSString class]]) continue;
+        
+        [entries addObject: [NSString stringWithFormat:@"%@=%@", key, value]];
+    }
+
+    if (![entries count]) {
+        completion(nil);
+        return;
+    }
+
+    [entries sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
+        return [[obj1 description] compare: [obj2 description]];
+    }];
+    
+    
+    NSString *paramsKey = [entries componentsJoinedByString:@","];
+    NSOperationQueue* callerQueue = [NSOperationQueue currentQueue];
+
+    if ([BFBrowserViewController.pendingLinkRequests containsObject: paramsKey]) {
+        [ButterflyUtils executeBlockAfterDelay: 1 block:^{
+            [callerQueue addOperationWithBlock:^{
+                [self fetchButterflyParamsFromURL: urlParams appKey: appKey sdkVersion: sdkVersion completion: completion];
+            }];
+        }];
+
+        return;
+    }
+    
+    [BFBrowserViewController.pendingLinkRequests addObject: paramsKey];
+    
+    NSDictionary *cachedResult = [BFBrowserViewController.cachedDeepLinkResponses objectForKey: paramsKey];
+
+    if (cachedResult && [cachedResult isKindOfClass: [NSDictionary class]]) {
+        completion(cachedResult);
+        return;
+    }
 
     NSDictionary *jsonBody = @{
         @"apiKey": appKey,
@@ -385,9 +452,22 @@ __strong static NSMutableSet *_urlWhiteList;
             completion(nil);
             return;
         }
-            
-        NSDictionary *resultParams = [[NSDictionary alloc] initWithDictionary:(NSDictionary *)result];
-        completion(resultParams);
+
+        NSMutableDictionary *resultParams = [NSMutableDictionary new];
+        NSDictionary* resultJsonDictionary = (NSDictionary*) result;
+        for (id key in [resultJsonDictionary allKeys]) {
+            // Convert all keys and values to strings - important
+            NSString *value = [[resultJsonDictionary objectForKey: key] description];
+            NSString *keyString = [key description];
+            if ([keyString length] && [value length]) {
+                [resultParams setObject: value forKey: keyString];
+            }
+        }
+        
+        [callerQueue addOperationWithBlock:^{
+            [BFBrowserViewController.cachedDeepLinkResponses setObject: resultParams forKey: paramsKey];
+            completion(resultParams);
+        }];
     }];
 }
 
