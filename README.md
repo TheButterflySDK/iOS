@@ -17,7 +17,7 @@ Just add the pod 'TheButterflySDK' similar to the following to your Podfile:
 
 ```
 target 'MyApp' do
-  pod 'TheButterflySDK', '2.0.0'
+  pod 'TheButterflySDK', '2.1.0'
 end
 
 ```
@@ -39,7 +39,7 @@ To recognize your app in TheButterflySDK servers you'll need an application key.
 /* ... */
 
 // Whenever you wish to open our screen, simply call:
-[ButterflySDK openReporterWithKey:@"YOUR_API_KEY"];
+[ButterflySDK openWithKey:@"YOUR_API_KEY"];
 ```
 
 ### Swift
@@ -51,15 +51,13 @@ import TheButterflySDK
 /* ... */
 
 // Whenever you wish to open our screen, simply call:
-ButterflySDK.openReporter(withKey: "YOUR_API_KEY")
+ButterflySDK.open(withKey: "YOUR_API_KEY")
 ```
 
 ## Integration tests
 #### How?
 
-You can easily verify your application key 🔑 by simply running the SDK in **DEBUG mode** 🐞.
-
-This will cause our servers to skip the part of sending reports to real live support centers, they will only verify the API key. Eventually you'll get success / failure result.
+You can easily verify your application key 🔑 by simply running the SDK in **DEBUG mode** 🐞 and start a chat with Betty 💬
 
 
 ### Enjoy and good luck ❤️

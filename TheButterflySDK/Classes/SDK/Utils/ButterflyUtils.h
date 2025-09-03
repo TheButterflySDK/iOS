@@ -24,15 +24,49 @@
 +(BOOL)isRunningReleaseVersion;
 +(BOOL)isRunningOnSimulator;
 
-+ (void)sendRequest:(NSDictionary *)jsonDictionary toUrl:(NSString *)urlString withHeaders:(NSDictionary *)headers completionCallback:(void (^)(NSString * responseString)) completionCallback;
++ (void)sendRequest:(NSDictionary *)jsonDictionary
+              toUrl:(NSString *)urlString
+        withHeaders:(NSDictionary *)headers
+ completionCallback:(void (^)(NSString * responseString))completionCallback;
 
-+(NSString *) toJsonString:(NSDictionary *) jsonDictionary;
-+(NSData *) toJsonData:(NSDictionary *) jsonDictionary;
-+(NSDictionary *) toJsonDictionary:(NSString *) jsonString;
++ (void)sendRequest:(NSDictionary *)jsonDictionary
+              toUrl:(NSString *)urlString
+  completionHandler:(void (^)(NSDictionary * responseDict))completionHandler;
 
-+(void) pinToSuperView: (UIView *) subview attribute1:(NSLayoutAttribute) attribute1 attribute2:(NSLayoutAttribute) attribute2;
-+(void) pinToSuperView: (UIView *) subview attribute1:(NSLayoutAttribute) attribute1 constant1:(CGFloat) constant1 attribute2:(NSLayoutAttribute) attribute2  constant2:(CGFloat) constant2;
-+(void) pinToSuperViewCenter: (UIView *) subview;
-+(void) stretchToSuperView: (UIView *) subview;
++(NSString *)toJsonString:(NSDictionary *)jsonDictionary;
+
++(NSData *)toJsonData:(NSDictionary *)jsonDictionary;
+
++(NSDictionary *)toJsonDictionary:(NSString *)jsonString;
+
++(void) pinToSuperView:(UIView *)subview
+            attribute1:(NSLayoutAttribute)attribute1
+            attribute2:(NSLayoutAttribute)attribute2;
+
++(void) pinToSuperView:(UIView *)subview
+            attribute1:(NSLayoutAttribute)attribute1
+             constant1:(CGFloat)constant1
+            attribute2:(NSLayoutAttribute)attribute2
+             constant2:(CGFloat)constant2;
+
++(void) pinToSuperViewCenter:(UIView *)subview;
+
++(void) stretchToSuperView:(UIView *)subview;
+
++ (void)repeatUntil:(NSTimeInterval)delay
+        maxAttempts:(NSInteger)maxAttempts
+      exitCondition:(BOOL (^)(void))condition
+         completion:(void (^)(BOOL success))completion;
+
++ (void)repeatUntil:(NSTimeInterval)delay
+        maxAttempts:(NSInteger)maxAttempts
+      attemptsCount:(NSInteger)attemptsCount
+      exitCondition:(BOOL (^)(void))condition
+         completion:(void (^)(BOOL success))completion;
+
++ (void)executeBlockAfterDelay:(NSTimeInterval)delay
+                         block:(void (^)(void))block;
+
++ (void)runOnMainThread:(dispatch_block_t)block;
 
 @end

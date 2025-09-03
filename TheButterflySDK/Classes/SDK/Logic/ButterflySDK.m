@@ -13,40 +13,63 @@
 @implementation ButterflySDK
 
 __strong static ButterflySDK* _shared;
-+(ButterflySDK*) shared {
++ (ButterflySDK*) shared {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken,^{
-        _shared = [[ButterflySDK alloc]initWithCoder:nil];
+        _shared = [[ButterflySDK alloc] initWithCoder:nil];
     });
     return _shared;
 }
 
--(instancetype) init {
+#pragma mark - Initialize
+
+- (instancetype)init {
     return [ButterflySDK shared];
 }
 
--(instancetype)initWithCoder:(NSCoder*) coder {
+- (instancetype)initWithCoder:(NSCoder*)coder {
    if(self = [super init]) { }
     
     return self;
 }
 
-+(void) openReporterWithKey:(NSString *)key {
-    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-        [ButterflyHostController openReporterWithKey:key];
-    }];
-}
+#pragma mark - Interface Settings
 
-+ (void)overrideLanguage:(NSString *) languageToOverride {
-    [ButterflyHostController overrideLanguage: languageToOverride];
++ (void)overrideLanguage:(NSString *)languageToOverride {
+    [ButterflyHostController overrideLanguage:languageToOverride];
 }
 
 + (void)overrideCountry:(NSString *)countryCode {
-    [ButterflyHostController overrideCountry: countryCode];
+    [ButterflyHostController overrideCountry:countryCode];
 }
 
-+ (void)useCustomColor:(NSString *) colorHexa {
-    [ButterflyHostController useCustomColor: colorHexa];
++ (void)useCustomColor:(NSString *)colorHexa {
+    [ButterflyHostController useCustomColor:colorHexa];
+}
+
+#pragma mark - Reporter Handling
+
++ (void)openWithKey:(NSString *)key {
+    [ButterflyHostController openReporterWithKey:key];
+}
+
++ (void)openReporterWithKey:(NSString *)key {
+    [self openWithKey: key];
+}
+
++ (void)handleIncomingURL:(NSURL *)url
+                   apiKey:(NSString *)apiKey {
+    [ButterflyHostController handleIncomingURL:url apiKey:apiKey];
+}
+
++ (void)handleUserActivity:(NSUserActivity *)userActivity
+                    apiKey:(NSString *)apiKey {
+    [ButterflyHostController handleUserActivity:userActivity apiKey:apiKey];
+}
+
++ (void)openURLContexts:(UIOpenURLContext *)urlContext
+                 apiKey:(NSString *)apiKey {
+    [ButterflyHostController openURLContexts:urlContext apiKey:apiKey];
 }
 
 @end

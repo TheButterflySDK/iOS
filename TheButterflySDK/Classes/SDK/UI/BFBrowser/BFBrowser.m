@@ -38,7 +38,18 @@
 
 @implementation BFBrowserViewController
 
+__strong static NSMutableDictionary *_cachedDeepLinkResponses;
 __strong static NSMutableSet *_urlWhiteList;
+__strong static NSMutableSet *_pendingLinkRequests;
+
++(NSMutableDictionary *) cachedDeepLinkResponses {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        _cachedDeepLinkResponses = [NSMutableDictionary dictionary];
+    });
+
+    return _cachedDeepLinkResponses;
+}
 
 +(NSMutableSet *) urlWhiteList {
     static dispatch_once_t onceToken;
@@ -47,6 +58,15 @@ __strong static NSMutableSet *_urlWhiteList;
     });
 
     return _urlWhiteList;
+}
+
++(NSMutableSet *) pendingLinkRequests {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        _pendingLinkRequests = [NSMutableSet set];
+    });
+
+    return _pendingLinkRequests;
 }
 
 - (void)viewDidLoad {
@@ -332,11 +352,14 @@ __strong static NSMutableSet *_urlWhiteList;
     }
 }
 
-+ (void)launchUrl:(NSString *)url result:(BFBrowserResult)result {
-    [[[BFBrowser alloc] init] launchUrlInViewController: url result:result];
++ (void)launchUrl:(NSString *)url
+           result:(BFBrowserResult)result {
+    [[[BFBrowser alloc] init] launchUrlInViewController:url
+                                                 result:result];
 }
 
-- (void)launchUrlInViewController:(NSString *) urlString result:(BFBrowserResult) result {
+- (void)launchUrlInViewController:(NSString *)urlString
+                           result:(BFBrowserResult)result {
     NSURL *url = [NSURL URLWithString:urlString];
     BFBrowserViewController *browserViewController = [[BFBrowserViewController alloc] init];
     browserViewController.url = url;
@@ -350,6 +373,101 @@ __strong static NSMutableSet *_urlWhiteList;
         if (result) {
             result(@"OK");
         }
+    }];
+}
+
++ (void)fetchButterflyParamsFromURL:(NSMutableDictionary<NSString *, NSString *> *_Nullable)urlParams
+                             appKey:(NSString * _Nonnull)appKey
+                         sdkVersion:(NSString * _Nonnull)sdkVersion
+                         completion:(void (^_Nonnull)(NSDictionary * _Nullable butterflyParams))completion {
+    if (!completion) return;
+    if (![urlParams count]) {
+        completion(nil);
+        return;
+    }
+
+    // val cachedKeysKey = urlParams.entries.toList().sortedBy { it.key }.joinToString(",")
+
+    NSMutableArray *entries = [NSMutableArray array];
+    for (NSString *key in [urlParams allKeys]) {
+        NSString *value = [urlParams objectForKey: key];
+        if (value == nil || ![value isKindOfClass:[NSString class]]) continue;
+        
+        [entries addObject: [NSString stringWithFormat:@"%@=%@", key, value]];
+    }
+
+    if (![entries count]) {
+        completion(nil);
+        return;
+    }
+
+    [entries sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
+        return [[obj1 description] compare: [obj2 description]];
+    }];
+    
+    
+    NSString *paramsKey = [entries componentsJoinedByString:@","];
+    NSOperationQueue* callerQueue = [NSOperationQueue currentQueue];
+
+    if ([BFBrowserViewController.pendingLinkRequests containsObject: paramsKey]) {
+        [ButterflyUtils executeBlockAfterDelay: 1 block:^{
+            [callerQueue addOperationWithBlock:^{
+                [self fetchButterflyParamsFromURL: urlParams appKey: appKey sdkVersion: sdkVersion completion: completion];
+            }];
+        }];
+
+        return;
+    }
+    
+    [BFBrowserViewController.pendingLinkRequests addObject: paramsKey];
+    
+    NSDictionary *cachedResult = [BFBrowserViewController.cachedDeepLinkResponses objectForKey: paramsKey];
+
+    if (cachedResult && [cachedResult isKindOfClass: [NSDictionary class]]) {
+        completion(cachedResult);
+        return;
+    }
+
+    NSDictionary *jsonBody = @{
+        @"apiKey": appKey,
+        @"sdkVersion": sdkVersion,
+        @"platform": @"ios",
+        @"urlParams": urlParams
+    };
+    
+    // Create the request
+    NSString *baseURL = @"https://us-central1-butterfly-button.cloudfunctions.net/convertToUrlParams";
+    [ButterflyUtils sendRequest:jsonBody
+                          toUrl:baseURL
+              completionHandler:^(NSDictionary *responseDict) {
+        
+        if (!responseDict) {
+            completion(nil);
+            return;
+        }
+        
+        id result = [responseDict objectForKey:@"result"];
+        if (result == nil || ![result isKindOfClass:[NSDictionary class]]) {
+            [BFSDKLogger logMessage: @"Invalid or missing 'result' key in JSON"];
+            completion(nil);
+            return;
+        }
+
+        NSMutableDictionary *resultParams = [NSMutableDictionary new];
+        NSDictionary* resultJsonDictionary = (NSDictionary*) result;
+        for (id key in [resultJsonDictionary allKeys]) {
+            // Convert all keys and values to strings - important
+            NSString *value = [[resultJsonDictionary objectForKey: key] description];
+            NSString *keyString = [key description];
+            if ([keyString length] && [value length]) {
+                [resultParams setObject: value forKey: keyString];
+            }
+        }
+        
+        [callerQueue addOperationWithBlock:^{
+            [BFBrowserViewController.cachedDeepLinkResponses setObject: resultParams forKey: paramsKey];
+            completion(resultParams);
+        }];
     }];
 }
 

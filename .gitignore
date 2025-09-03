@@ -1,3 +1,6 @@
 
 *.xcuserstate
 Example/TheButterflySDK.xcworkspace/xcuserdata
+Example/TheButterflySDK.xcodeproj/project.xcworkspace/xcshareddata
+Example/Pods/
+Example/Podfile.lock
