@@ -23,7 +23,7 @@
 
 @implementation ButterflyHostController
 
-NSString* const butterflySdkVersion = @"2.1.0";
+NSString* const butterflySdkVersion = @"2.1.1";
 
 __strong static ButterflyHostController* _shared;
 
@@ -103,15 +103,19 @@ __strong static ButterflyHostController* _shared;
                                     appKey:apiKey
                                 sdkVersion:butterflySdkVersion
                                 completion:^(NSDictionary * _Nullable butterflyParams) {
-        [ButterflyHostController whenTopViewControllerIsReady:^(BOOL success) {
-            if (!success) return;
-            
-            if ([butterflyParams count]) {
-                [self openReporterUsingKey:apiKey
-                               extraParams:butterflyParams];
-            } else {
-                [BFSDKLogger logMessage: @"No need to handle deep link params. Aborting URL handling..."];
-            }
+        [ButterflyUtils runOnMainThread: ^{
+            if ([ButterflyHostController isAlreadyPresented]) return;
+
+            [ButterflyHostController whenTopViewControllerIsReady:^(BOOL success) {
+                if (!success) return;
+                
+                if ([butterflyParams count]) {
+                    [self openReporterUsingKey:apiKey
+                                   extraParams:butterflyParams];
+                } else {
+                    [BFSDKLogger logMessage: @"No need to handle deep link params. Aborting URL handling..."];
+                }
+            }];
         }];
     }];
 }
@@ -120,7 +124,8 @@ __strong static ButterflyHostController* _shared;
 
 - (void)openReporterUsingKey:(NSString *)key
                  extraParams:(NSDictionary * _Nullable) extraParams {
-    
+    if ([ButterflyHostController isAlreadyPresented]) return;
+
     NSString* languageCode = [self extractedLanguageCode];
     NSString* countryToOverride = self.countryCodeToOverride ?: @"n";
     NSString* customColorHexa = self.customColorHexa ?: @"n";
@@ -169,7 +174,7 @@ __strong static ButterflyHostController* _shared;
             if (!currentTop) {
                 return NO;
             }
-            
+
             if ([topViewControllerHistory.lastObject isEqual:currentTop]) {
                 return YES;
             }
@@ -188,8 +193,25 @@ __strong static ButterflyHostController* _shared;
         }];
     }];
 }
+ 
++ (BOOL)isAlreadyPresented {
+    UIViewController *currentTop = [self topViewController];
 
+    if (currentTop == nil) {
+        [BFSDKLogger logMessage: @"[ERROR] ❌ Called outside from main thread!"];
+        return NO;
+    }
+
+    return [[[currentTop class] description] containsString: @"BFBrowserViewController"];
+}
+
+/// Must be called inside the main thread
 + (UIViewController *)topViewController {
+    if ([NSOperationQueue currentQueue] != [NSOperationQueue mainQueue]) {
+        [BFSDKLogger logMessage: @"[ERROR] ❌ Called outside from main thread!"];
+        return nil;
+    }
+
     return [self topViewControllerFromViewController:
             [UIApplication sharedApplication].keyWindow.rootViewController];
 }

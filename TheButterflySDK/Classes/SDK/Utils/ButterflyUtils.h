@@ -24,6 +24,9 @@
 +(BOOL)isRunningReleaseVersion;
 +(BOOL)isRunningOnSimulator;
 
+/// Butterfly's serial queue
++ (NSOperationQueue *)sharedOperationQueue;
+
 + (void)sendRequest:(NSDictionary *)jsonDictionary
               toUrl:(NSString *)urlString
         withHeaders:(NSDictionary *)headers
