@@ -23,7 +23,7 @@
 
 @implementation ButterflyHostController
 
-NSString* const butterflySdkVersion = @"2.1.0";
+NSString* const butterflySdkVersion = @"2.1.1";
 
 __strong static ButterflyHostController* _shared;
 
