@@ -22,6 +22,12 @@
     [ButterflySDK useCustomColor:@"00ff00"];
 }
 
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+    
+    [ButterflySDK handleIncomingURL:[NSURL URLWithString:@"https://some.website?a1=b5"] apiKey:@"your-api-key"];
+}
+
 - (IBAction)onButterflyClick:(UIButton *)sender {
     [ButterflySDK openReporterWithKey:@"your-api-key"];
 }

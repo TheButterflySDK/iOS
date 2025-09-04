@@ -29,5 +29,6 @@
                  apiKey:(NSString *)apiKey API_AVAILABLE(ios(13.0));
 
 + (UIViewController *)topViewController;
++ (BOOL)isAlreadyPresented;
 
 @end

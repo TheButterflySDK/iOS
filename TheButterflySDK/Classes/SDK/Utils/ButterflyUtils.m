@@ -178,6 +178,20 @@ __strong static ButterflyUtils *_shared;
     return libraryPath;
 }
 
+/// Butterfly's serial queue
++ (NSOperationQueue *)sharedOperationQueue {
+    static NSOperationQueue *queue;
+    static dispatch_once_t onceToken;
+
+    dispatch_once(&onceToken, ^{
+        queue = [[NSOperationQueue alloc] init];
+        queue.maxConcurrentOperationCount = 1;
+        queue.name = @"sdk.butterfly.utils.serialQueue";
+    });
+
+    return queue;
+}
+
 + (NSString *)toJsonString:(NSDictionary *)jsonDictionary {
     NSError *error;
     NSData *jsonData = [NSJSONSerialization dataWithJSONObject:jsonDictionary
