@@ -24,13 +24,14 @@ end
 
 Then run a pod install in your terminal, or from CocoaPods app.
 
-## Usage
+## Usage examples
 
 To recognize your app in TheButterflySDK servers you'll need an application key. You can set it via code, as demonstrated here.
 
-## Example
+### Forward the deep link to the SDK for handling
 
-### Objective-C
+
+#### Objective-C
 
 ```objective-c
 // import the pod
@@ -42,7 +43,7 @@ To recognize your app in TheButterflySDK servers you'll need an application key.
 [ButterflySDK openWithKey:@"YOUR_API_KEY"];
 ```
 
-### Swift
+#### Swift
 
 ```Swift
 // import the pod
@@ -52,6 +53,19 @@ import TheButterflySDK
 
 // Whenever you wish to open our screen, simply call:
 ButterflySDK.open(withKey: "YOUR_API_KEY")
+```
+
+### Forward the deep link to the SDK for handling
+
+#### Swift 🤓
+```swift
+// import the pod
+import TheButterflySDK
+
+/* ... */
+
+// Whenever you need to handle a deep link in your app:
+ButterflySDK.handleIncomingURL(URL(string: "https://some.website?someParam=someValue&otherParam=otherValue"), apiKey: "YOUR_API_KEY")
 ```
 
 ## Integration tests
