@@ -25,7 +25,8 @@
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
     
-    [ButterflySDK handleIncomingURL:[NSURL URLWithString:@"https://some.website?a1=b5"] apiKey:@"your-api-key"];
+    // Whenever you need to ahdnle a deep link in your app...
+    [ButterflySDK handleIncomingURL:[NSURL URLWithString:@"https://some.website?someParam=someValue&otherParam=otherValue"] apiKey:@"your-api-key"];
 }
 
 - (IBAction)onButterflyClick:(UIButton *)sender {
