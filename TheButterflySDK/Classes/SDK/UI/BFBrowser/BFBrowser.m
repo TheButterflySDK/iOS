@@ -199,7 +199,7 @@ __strong static NSMutableSet *_pendingLinkRequests;
 
         NSString *urlString = [[components lastObject] description];
         NSURL *url = [NSURL URLWithString: urlString];
-        BOOL isValid = [url scheme] && [url host];
+        BOOL isValid = ([url scheme] && [url host]) || ([urlString hasPrefix: @"mailto:"] || [urlString hasPrefix: @"tel:"]);
         if (isValid) {
             [[UIApplication sharedApplication] openURL: url options: @{} completionHandler: ^(BOOL success) {
                 //
