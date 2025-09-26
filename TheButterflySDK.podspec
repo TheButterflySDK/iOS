@@ -8,8 +8,8 @@
 
 Pod::Spec.new do |s|
   s.name             = 'TheButterflySDK'
-  s.version          = '2.1.1'
-  s.summary          = 'The Butterfly SDK will allow your app to host our butterfly report button.'
+  s.version          = '2.1.2'
+  s.summary          = 'The Butterfly SDK will help your app to host The Butterfly report button.'
 
 # This description is used to generate tags and improve search results.
 #   * Think: What does it do? Why did you write it? What is the focus?
