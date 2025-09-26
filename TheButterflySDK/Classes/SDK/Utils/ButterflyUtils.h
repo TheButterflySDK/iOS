@@ -6,7 +6,7 @@
 //  Copyright © 2022 The Butterfly SDK. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 @interface BFSDKLogger: NSObject
 

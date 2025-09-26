@@ -23,7 +23,7 @@
 
 @implementation ButterflyHostController
 
-NSString* const butterflySdkVersion = @"2.1.1";
+NSString* const butterflySdkVersion = @"2.1.2";
 
 __strong static ButterflyHostController* _shared;
 
@@ -122,6 +122,10 @@ __strong static ButterflyHostController* _shared;
 
 #pragma mark - Shared logic
 
+- (NSString *)safeZoneBaseUrl {
+    return @"https://butterfly-button.web.app";
+}
+
 - (void)openReporterUsingKey:(NSString *)key
                  extraParams:(NSDictionary * _Nullable) extraParams {
     if ([ButterflyHostController isAlreadyPresented]) return;
@@ -131,7 +135,7 @@ __strong static ButterflyHostController* _shared;
     NSString* customColorHexa = self.customColorHexa ?: @"n";
     NSString* bundleId = [NSBundle mainBundle].bundleIdentifier;
     NSMutableDictionary *allParams = [NSMutableDictionary new];
-    NSString* reporterUrl = @"https://butterfly-button.web.app/reporter/";
+    NSString* reporterUrl = [NSString stringWithFormat:@"%@/reporter/", [self safeZoneBaseUrl]];
 
     [allParams setObject: languageCode forKey: @"language"];
     [allParams setObject: key forKey: @"api_key"];

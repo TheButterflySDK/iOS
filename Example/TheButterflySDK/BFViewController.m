@@ -16,12 +16,6 @@
 
 @implementation BFViewController
 
-- (void)viewDidLoad {
-    [super viewDidLoad];
-
-    [ButterflySDK useCustomColor:@"00ff00"];
-}
-
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
     

@@ -199,7 +199,7 @@ __strong static NSMutableSet *_pendingLinkRequests;
 
         NSString *urlString = [[components lastObject] description];
         NSURL *url = [NSURL URLWithString: urlString];
-        BOOL isValid = [url scheme] && [url host];
+        BOOL isValid = ([url scheme] && [url host]) || ([urlString hasPrefix: @"mailto:"] || [urlString hasPrefix: @"tel:"]);
         if (isValid) {
             [[UIApplication sharedApplication] openURL: url options: @{} completionHandler: ^(BOOL success) {
                 //
@@ -376,6 +376,10 @@ __strong static NSMutableSet *_pendingLinkRequests;
     }];
 }
 
++ (NSString *)functionsBaseURL {
+    return @"https://us-central1-butterfly-button.cloudfunctions.net";
+}
+
 + (void)fetchButterflyParamsFromURL:(NSMutableDictionary<NSString *, NSString *> *_Nullable)urlParams
                              appKey:(NSString * _Nonnull)appKey
                          sdkVersion:(NSString * _Nonnull)sdkVersion
@@ -437,17 +441,16 @@ __strong static NSMutableSet *_pendingLinkRequests;
             
             [BFBrowserViewController.pendingLinkRequests addObject: paramsKey];
             
+            NSString* apiUrl = [NSString stringWithFormat:@"%@/convertToUrlParams", [self functionsBaseURL]];
             NSDictionary *jsonBody = @{
                 @"apiKey": appKey,
                 @"sdkVersion": sdkVersion,
                 @"platform": @"ios",
                 @"urlParams": urlParams
             };
-            
-            // Create the request
-            NSString *baseURL = @"https://us-central1-butterfly-button.cloudfunctions.net/convertToUrlParams";
+
             [ButterflyUtils sendRequest:jsonBody
-                                  toUrl:baseURL
+                                  toUrl:apiUrl
                       completionHandler:^(NSDictionary *responseDict) {
                 
                 if (!responseDict) {
