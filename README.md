@@ -32,11 +32,11 @@ dependencies: [
 ### Install via CocoaPods
 
 - If you don't have CocoaPods In your project, visit here : https://cocoapods.org/
-Just add the pod 'TheButterflySDK' similar to the following to your Podfile:
+  Just add the pod 'TheButterflySDK' similar to the following to your Podfile:
 
 ```
 target 'MyApp' do
-pod 'TheButterflySDK', '2.1.2'
+  pod 'TheButterflySDK', '2.1.2'
 end
 
 ```
@@ -61,7 +61,7 @@ To recognize your app in TheButterflySDK servers you'll need an application key.
 /* ... */
 
 // Whenever you wish to open our screen, simply call:
-[ButterflySDK openReporterWithKey:@"YOUR_API_KEY"];
+[ButterflySDK openWithKey:@"YOUR_API_KEY"];
 ```
 
 #### Swift
@@ -73,7 +73,7 @@ import TheButterflySDK
 /* ... */
 
 // Whenever you wish to open our screen, simply call:
-ButterflySDK.openReporter(withKey: "YOUR_API_KEY")
+ButterflySDK.open(withKey: "YOUR_API_KEY")
 ```
 
 ### Forward the deep link to the SDK for handling
@@ -92,9 +92,7 @@ ButterflySDK.handleIncomingURL(URL(string: "https://some.website?someParam=someV
 ## Integration tests
 #### How?
 
-You can easily verify your application key 🔑 by simply running the SDK in **DEBUG mode** 🐞.
-
-This will cause our servers to skip the part of sending reports to real live support centers, they will only verify the API key. Eventually you'll get success / failure result.
+You can easily verify your application key 🔑 by simply running the SDK in **DEBUG mode** 🐞 and start a chat with Betty 💬
 
 
 ### Enjoy and good luck ❤️
