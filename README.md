@@ -1,5 +1,9 @@
 # The Butterfly SDK for iOS
 
+[![Version](https://img.shields.io/cocoapods/v/TheButterflySDK.svg?style=flat)](https://cocoapods.org/pods/TheButterflySDK)
+[![License](https://img.shields.io/cocoapods/l/TheButterflySDK.svg?style=flat)](https://github.com/TheButterflySDK/iOS/blob/main/LICENSE)
+[![Platform](https://img.shields.io/cocoapods/p/TheButterflySDK.svg?style=flat)](https://cocoapods.org/pods/TheButterflySDK)
+
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/TheButterflySDK/iOS/blob/main/LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-iOS-blue.svg)](https://developer.apple.com/ios/)
 
@@ -25,13 +29,28 @@ dependencies: [
 ]
 ```
 
-## Usage
+### Install via CocoaPods
+
+- If you don't have CocoaPods In your project, visit here : https://cocoapods.org/
+Just add the pod 'TheButterflySDK' similar to the following to your Podfile:
+
+```
+target 'MyApp' do
+pod 'TheButterflySDK', '2.1.2'
+end
+
+```
+
+Then run a pod install in your terminal, or from CocoaPods app.
+
+## Usage examples
 
 To recognize your app in TheButterflySDK servers you'll need an application key. You can set it via code, as demonstrated here.
 
-## Example
+### Forward the deep link to the SDK for handling
 
-### Objective-C
+
+#### Objective-C
 
 ```objective-c
 // import the framework (choose one of these styles)
@@ -45,7 +64,7 @@ To recognize your app in TheButterflySDK servers you'll need an application key.
 [ButterflySDK openReporterWithKey:@"YOUR_API_KEY"];
 ```
 
-### Swift
+#### Swift
 
 ```Swift
 // import the framework
@@ -55,6 +74,19 @@ import TheButterflySDK
 
 // Whenever you wish to open our screen, simply call:
 ButterflySDK.openReporter(withKey: "YOUR_API_KEY")
+```
+
+### Forward the deep link to the SDK for handling
+
+#### Swift 🤓
+```swift
+// import the pod
+import TheButterflySDK
+
+/* ... */
+
+// Whenever you need to handle a deep link in your app:
+ButterflySDK.handleIncomingURL(URL(string: "https://some.website?someParam=someValue&otherParam=otherValue"), apiKey: "YOUR_API_KEY")
 ```
 
 ## Integration tests
