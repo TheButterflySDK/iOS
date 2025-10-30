@@ -1,28 +1,35 @@
 //
-//  ViewController.m
-//  Example
+//  BFViewController.m
+//  TheButterflySDK
 //
-//  Created by Assaf Tayouri on 31/08/2025.
+//  Created by Perry on 02/28/2022.
+//  Copyright (c) 2022 Perry. All rights reserved.
 //
 
-#import "ViewController.h"
-#import "TheButterflySDK.h"
+#import "BFViewController.h"
+#import "BFAppDelegate.h"
+#import "ButterflySDK.h"
 
-@interface ViewController ()
+@interface BFViewController ()
 
 @end
 
-@implementation ViewController
+@implementation BFViewController
 
-- (void)viewDidLoad {
-    [super viewDidLoad];
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
     
-    [ButterflySDK useCustomColor:@"00ff00"];
+    // Whenever you need to ahdnle a deep link in your app...
+    [ButterflySDK handleIncomingURL:[NSURL URLWithString:@"https://some.website?someParam=someValue&otherParam=otherValue"] apiKey:@"your-api-key"];
 }
 
 - (IBAction)onButterflyClick:(UIButton *)sender {
     [ButterflySDK openReporterWithKey:@"your-api-key"];
 }
 
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
 
 @end
